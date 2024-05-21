@@ -17,6 +17,7 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import kore.botssdk.activity.BotChatActivity;
+import kore.botssdk.bot.BotClient;
 import kore.botssdk.event.KoreEventCenter;
 import kore.botssdk.events.SocketDataTransferModel;
 import kore.botssdk.listener.BaseSocketConnectionManager;
@@ -28,84 +29,97 @@ import kore.botssdk.net.SDKConfiguration;
 import kore.botssdk.utils.BundleUtils;
 import kore.botssdk.utils.StringUtils;
 
-/** KorebotpluginPlugin */
+/**
+ * KorebotpluginPlugin
+ */
 public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
-  private MethodChannel channel;
-  private Context context;
-  private Result result;
-  private Gson gson = new Gson();
+    /// The MethodChannel that will the communication between Flutter and native Android
+    ///
+    /// This local reference serves to register the plugin with the Flutter Engine and unregister it
+    /// when the Flutter Engine is detached from the Activity
+    private MethodChannel channel;
+    private Context context;
+    private final Gson gson = new Gson();
 
-  @Override
-  public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "kore.botsdk/chatbot");
-    channel.setMethodCallHandler(this);
-    context = flutterPluginBinding.getApplicationContext();
-    KoreEventCenter.register(this);
-  }
+    private BotClient botClient;
 
-  @Override
-  public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-    this.result = result;
-    if(call.method.equals("getChatWindow"))
-    {
-      SDKConfiguration.Client.bot_id = "st-b9889c46-218c-58f7-838f-73ae9203488c";
-      SDKConfiguration.Client.client_secret = "5OcBSQtH/k6Q/S6A3bseYfOee02YjjLLTNoT1qZDBso=";
-      SDKConfiguration.Client.client_id = "cs-1e845b00-81ad-5757-a1e7-d0f6fea227e9";
-      SDKConfiguration.Client.bot_name = "Kore Bot SDK";
-      SDKConfiguration.Client.identity = "anilkumar.routhu@kore.com";
-
-      BotSocketConnectionManager.getInstance().setChatListener(sListener);
-
-      BotSocketConnectionManager.getInstance().startAndInitiateConnectionWithConfig(context, null);
-      Intent intent = new Intent(context, BotChatActivity.class);
-      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-      Bundle bundle = new Bundle();
-      bundle.putBoolean(BundleUtils.SHOW_PROFILE_PIC, false);
-      if(!StringUtils.isNullOrEmpty(SDKConfiguration.Client.bot_name))
-        bundle.putString(BundleUtils.BOT_NAME_INITIALS,SDKConfiguration.Client.bot_name.charAt(0)+"");
-      else
-        bundle.putString(BundleUtils.BOT_NAME_INITIALS,"B");
-      intent.putExtras(bundle);
-      context.startActivity(intent);
-    }
-  }
-
-  SocketChatListener sListener = new SocketChatListener() {
     @Override
-    public void onMessage(BotResponse botResponse) {
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "kore.botsdk/chatbot");
+        channel.setMethodCallHandler(this);
+        context = flutterPluginBinding.getApplicationContext();
+        KoreEventCenter.register(this);
+    }
+
+    @Override
+    public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
+        if (call.method.equals("getChatWindow")) {
+            SDKConfiguration.Client.bot_id = "st-b9889c46-218c-58f7-838f-73ae9203488c";
+            SDKConfiguration.Client.client_secret = "5OcBSQtH/k6Q/S6A3bseYfOee02YjjLLTNoT1qZDBso=";
+            SDKConfiguration.Client.client_id = "cs-1e845b00-81ad-5757-a1e7-d0f6fea227e9";
+            SDKConfiguration.Client.bot_name = "Bot SDK";
+            SDKConfiguration.Client.identity = "anilkumar.routhu@kore.com";
+
+            botClient = new BotClient(context);
+            BotSocketConnectionManager.getInstance().setChatListener(sListener);
+            BotSocketConnectionManager.getInstance().startAndInitiateConnectionWithConfig(context, null);
+        } else if (call.method.equals("sendMessage")) {
+            BotSocketConnectionManager.getInstance().sendMessage(call.argument("message"), call.argument("message"));
+        }
+//    if(call.method.equals("getChatWindow"))
+//    {
+//      SDKConfiguration.Client.bot_id = "st-b9889c46-218c-58f7-838f-73ae9203488c";
+//      SDKConfiguration.Client.client_secret = "5OcBSQtH/k6Q/S6A3bseYfOee02YjjLLTNoT1qZDBso=";
+//      SDKConfiguration.Client.client_id = "cs-1e845b00-81ad-5757-a1e7-d0f6fea227e9";
+//      SDKConfiguration.Client.bot_name = "Kore Bot SDK";
+//      SDKConfiguration.Client.identity = "anilkumar.routhu@kore.com";
+//
+//      BotSocketConnectionManager.getInstance().setChatListener(sListener);
+//      BotSocketConnectionManager.getInstance().startAndInitiateConnectionWithConfig(context, null);
+//      Intent intent = new Intent(context, BotChatActivity.class);
+//      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//      Bundle bundle = new Bundle();
+//      bundle.putBoolean(BundleUtils.SHOW_PROFILE_PIC, false);
+//      if(!StringUtils.isNullOrEmpty(SDKConfiguration.Client.bot_name))
+//        bundle.putString(BundleUtils.BOT_NAME_INITIALS,SDKConfiguration.Client.bot_name.charAt(0)+"");
+//      else
+//        bundle.putString(BundleUtils.BOT_NAME_INITIALS,"B");
+//      intent.putExtras(bundle);
+//      context.startActivity(intent);
+//    }
+    }
+
+    SocketChatListener sListener = new SocketChatListener() {
+        @Override
+        public void onMessage(BotResponse botResponse) {
 //      processPayload("", botResponse);
+        }
+
+        @Override
+        public void onConnectionStateChanged(BaseSocketConnectionManager.CONNECTION_STATE state, boolean isReconnection) {
+            if (state == BaseSocketConnectionManager.CONNECTION_STATE.CONNECTED) {
+                Toast.makeText(context, "Bot Connected Successfully", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        public void onMessage(SocketDataTransferModel data) {
+            if (data == null) return;
+            if (data.getEvent_type().equals(BaseSocketConnectionManager.EVENT_TYPE.TYPE_TEXT_MESSAGE)) {
+                Log.e("Payload", data.getPayLoad());
+                Toast.makeText(context, data.getPayLoad(), Toast.LENGTH_SHORT).show();
+            } else if (data.getEvent_type().equals(BaseSocketConnectionManager.EVENT_TYPE.TYPE_MESSAGE_UPDATE)) {
+            }
+        }
+    };
+
+    public void onEvent(CallBackEventModel callBackEventModel) {
+        channel.invokeMethod("Callbacks", gson.toJson(callBackEventModel));
     }
 
     @Override
-    public void onConnectionStateChanged(BaseSocketConnectionManager.CONNECTION_STATE state, boolean isReconnection) {
-      if(state == BaseSocketConnectionManager.CONNECTION_STATE.CONNECTED){
-        Toast.makeText(context, "Bot Connected Successfully", Toast.LENGTH_SHORT).show();
-      }
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        channel.setMethodCallHandler(null);
+        KoreEventCenter.unregister(this);
     }
-
-    @Override
-    public void onMessage(SocketDataTransferModel data) {
-      if (data == null) return;
-      if (data.getEvent_type().equals(BaseSocketConnectionManager.EVENT_TYPE.TYPE_TEXT_MESSAGE)) {
-        Log.e("Payload", data.getPayLoad());
-        Toast.makeText(context, data.getPayLoad(), Toast.LENGTH_SHORT).show();
-      } else if (data.getEvent_type().equals(BaseSocketConnectionManager.EVENT_TYPE.TYPE_MESSAGE_UPDATE)) {
-      }
-    }
-  };
-
-  public void onEvent(CallBackEventModel callBackEventModel)
-  {
-    channel.invokeMethod("Callbacks", gson.toJson(callBackEventModel));
-  }
-
-  @Override
-  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-    channel.setMethodCallHandler(null);
-    KoreEventCenter.unregister(this);
-  }
 }
