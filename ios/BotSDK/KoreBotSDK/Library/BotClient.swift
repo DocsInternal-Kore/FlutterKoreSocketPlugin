@@ -64,7 +64,7 @@ open class BotClient: NSObject, RTMPersistentConnectionDelegate {
     open var connectionReady: (() -> Void)?
    open var connectionDidClose: ((UInt16?, String?) -> Void)?
     open var connectionDidFailWithError: ((Error?) -> Void)?
-    open var onMessage: ((BotMessageModel?) -> Void)?
+    open var onMessage: (([String:Any]?) -> Void)?
     open var onMessageAck: ((Ack?) -> Void)?
     open var onUserMessageReceived:(([String:Any])-> Void)?
     open var botsUrl: String {
@@ -152,6 +152,18 @@ open class BotClient: NSObject, RTMPersistentConnectionDelegate {
         }
     }
     
+    
+    open func genarateJwTokenWithClientId(_ clientId: String!, clientSecret: String!, identity: String!, isAnonymous: Bool!, jwtURL: String!, success:((_ jwToken: String?) -> Void)?, failure:((_ error: Error) -> Void)?) {
+        
+        let requestManager: HTTPRequestManager = HTTPRequestManager.sharedManager
+        requestManager.getJwTokenWithClientId(clientId, clientSecret: clientSecret, identity: identity, isAnonymous: isAnonymous, jwtURL: jwtURL) { jwToken in
+            success?(jwToken)
+        } failure: { (error) in
+            failure?(error)
+        }
+    }
+    
+    
     open func disconnect() {
         if let connection = connection {
             connection.disconnect()
@@ -213,7 +225,7 @@ open class BotClient: NSObject, RTMPersistentConnectionDelegate {
     open func didReceivedUserMessage(_ usrMessage:[String:Any]) {
         onUserMessageReceived?(usrMessage)
     }
-    open func didReceiveMessage(_ message: BotMessageModel) {
+    open func didReceiveMessage(_ message: [String:Any]) {
         onMessage?(message)
     }
     

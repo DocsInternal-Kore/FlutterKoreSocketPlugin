@@ -34,6 +34,6 @@ A new Flutter plugin project.
   s.dependency 'Alamofire','~> 5.0.0-beta.5'
   s.dependency 'AlamofireObjectMapper'
   
-  s.dependency 'GhostTypewriter'
-  s.dependency 'MarkdownKit'
+  #s.dependency 'GhostTypewriter'
+  #s.dependency 'MarkdownKit'
 end
