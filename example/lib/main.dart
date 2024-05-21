@@ -67,6 +67,20 @@ class _MyHomePageState extends State<MyHomePage> {
     } on PlatformException catch (e) {}
   }
 
+  Future<void> _callSendmethod(msg) async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'Callbacks') {
+        // Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
+
+    try {
+      final String result =
+          await platform.invokeMethod('sendMessage', {"message": msg});
+    } on PlatformException catch (e) {}
+  }
+
 //   @override
 //   Widget build(BuildContext context) {
 //     return Material(
@@ -117,18 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
               child: ElevatedButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          // Retrieve the text the that user has entered by using the
-                          // TextEditingController.
-                          content: Text(myController.text),
-                        );
-                      },
-                    );
-                  },
+                  onPressed: () => {_callSendmethod(myController.text)},
                   child: const Text('Send Message')),
             ),
           ],

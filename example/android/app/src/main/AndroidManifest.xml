@@ -29,9 +29,6 @@
             </intent-filter>
         </activity>
 
-       <activity android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
-           android:name="kore.botssdk.activity.BotChatActivity"
-           tools:replace="android:theme"/>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
