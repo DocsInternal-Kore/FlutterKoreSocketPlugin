@@ -21,19 +21,9 @@ A new Flutter plugin project.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'
   
-  #s.module_name = "KoreBotSDK"
   s.source_files = ["Classes/**/*","BotSDK/**/*.{h,m,mm,swift,gif}", "KoreBotSDK/**/*.{h,m,swift,gif}", "BotSDK/Widgets/**/*.{h,m,txt,swift}"]
-  s.resource_bundles = {
-    'KoreBotSDK' => ["BotSDK/**/*.{xcassets}","BotSDK/**/*.{xcdatamodeld}", "BotSDK/Widgets/Widgets/**/*.{xcdatamodeld}", "BotSDK/Widgets/Resources/*.{xcassets}", 'BotSDK/**/*.xib', 'BotSDK/Widgets/**/*.xib', 'BotSDK/Widgets/Widgets/**/**/*.xib'],
-    'Gilroy' => ['BotSDK/**/**/**/**/*.otf'],
-    'Inter' => ['BotSDK/**/**/**/**/*.ttf'],
-    '29LTBukra' => ['BotSDK/**/**/**/**/*.ttf'],
-  }
   
   s.dependency 'Starscream'
   s.dependency 'Alamofire','~> 5.0.0-beta.5'
   s.dependency 'AlamofireObjectMapper'
-  
-  #s.dependency 'GhostTypewriter'
-  #s.dependency 'MarkdownKit'
 end

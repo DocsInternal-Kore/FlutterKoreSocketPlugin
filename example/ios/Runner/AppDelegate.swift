@@ -53,6 +53,7 @@ import korebotplugin
         let identityy = "rajasekhar.balla@kore.com"// This should represent the subject for JWT token. This can be an email or phone number, in case of known user, and in case of anonymous user, this can be a randomly generated unique id.
         let isAnonymous = true// This should be either true (in case of known-user) or false (in-case of anonymous user).
         let JWT_SERVER = String(format: "https://mk2r2rmj21.execute-api.us-east-1.amazonaws.com/dev/users/sts") // Replace it with the actual JWT server URL, if required. Refer to developer documentation for instructions on hosting JWT Server.
+        
         //Setting the server Url
         let botServerUrl: String = "https://bots.kore.ai"
         
