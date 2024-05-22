@@ -58,6 +58,41 @@ open class HTTPRequestManager : NSObject {
         }
     }
     
+    // MARK: get JWT token request
+    public func getJwTokenWithClientId(_ clientId: String!, clientSecret: String!, identity: String!, isAnonymous: Bool!, jwtURL: String!, success:((_ jwToken: String?) -> Void)?, failure:((_ error: Error) -> Void)?) {
+        
+        let urlString = jwtURL
+        let headers: HTTPHeaders = [
+            "Keep-Alive": "Connection",
+            "Accept": "application/json",
+            "alg": "RS256",
+            "typ": "JWT"
+        ]
+        let parameters: [String: Any] = ["clientId": clientId as String,
+                                         "clientSecret": clientSecret as String,
+                                         "identity": identity as String,
+                                         "aud": "https://idproxy.kore.com/authorize",
+                                         "isAnonymous": isAnonymous as Bool]
+        let dataRequest = sessionManager.request(urlString!, method: .post, parameters: parameters, headers: headers)
+        dataRequest.validate().responseJSON { (response) in
+            if let _ = response.error {
+                let error: NSError = NSError(domain: "bot", code: 100, userInfo: [:])
+                failure?(error)
+                return
+            }
+            
+            if let dictionary = response.value as? [String: Any],
+               let jwToken = dictionary["jwt"] as? String {
+                success?(jwToken)
+            } else {
+                let error: NSError = NSError(domain: "bot", code: 100, userInfo: [:])
+                failure?(error)
+            }
+            
+        }
+        
+    }
+    
     open func getRtmUrlWithAuthInfoModel(_ authInfo: AuthInfoModel, botInfo: [String: Any], success:((_ botInfo: BotInfoModel?) -> Void)?, failure:((_ error: Error) -> Void)?)  {
         let urlString: String = Constants.URL.rtmUrl
         let accessToken = String(format: "%@ %@", authInfo.tokenType ?? "", authInfo.accessToken ?? "")
