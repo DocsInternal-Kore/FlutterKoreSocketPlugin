@@ -27,7 +27,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
-    private MethodChannel channel;
+    MethodChannel channel;
     Context context;
     private final Gson gson = new Gson();
 
@@ -75,7 +75,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
         @Override
         public void onTextMessage(String payload) {
-            Log.e("onTextMessage payload", payload);
+            channel.invokeMethod("Callbacks", payload);
             Toast.makeText(context, payload, Toast.LENGTH_SHORT).show();
         }
 
