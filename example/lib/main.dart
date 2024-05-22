@@ -81,29 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
     } on PlatformException catch (e) {}
   }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Material(
-//       child: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//           children: <Widget>[
-//             Padding(
-//               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-//               child: TextFormField(
-//                 decoration: const InputDecoration(
-//                   border: UnderlineInputBorder(),
-//                   labelText: 'Enter your username',
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
   @override
   Widget build(BuildContext context) {
     return Material(
