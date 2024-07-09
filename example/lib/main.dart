@@ -66,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final myController = TextEditingController();
   final searchTxtfield = TextEditingController();
 
-  Future<void> _callNativemethod() async {
+  Future<void> connectToBot() async {
     platform.setMethodCallHandler((handler) async {
       if (handler.method == 'Callbacks') {
         // Do your logic here.
@@ -160,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
               child: ElevatedButton(
-                onPressed: _callNativemethod,
+                onPressed: connectToBot,
                 child: const Text('Bot Connect'),
               ),
             ),
