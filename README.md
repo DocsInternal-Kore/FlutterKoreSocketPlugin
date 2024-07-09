@@ -15,37 +15,75 @@ dependencies:
      # the parent directory to use the current plugin's version.
     path: ../ 
 ```
-Create a “Method channel” with channel name as below
+
+Steps for Integrating Flutter Socket Plugin into Flutter Application
+
+1) Create a “Method channel” with channel name as below
 ```
 static const platform = MethodChannel('kore.botsdk/chatbot');
 ```
-Create a method which establish the chat socket connection as below here the method name is
+
+2) Here is the sample varible format to pass bot configuration to the SDK's
 ```
-“_callNativemethod” can be changed as per requirement.
-Future<void> _callNativemethod() async {
-  platform.setMethodCallHandler((handler) async {
-    if (handler.method == 'Callbacks') {
-      // Do your logic here.
+var botConfig = {
+    "clientId": "cs-47e5f4e6-0621-563d-a3fb-2d1f3ab94750",
+    "clientSecret": "TvctzsjB/iewjdddKi2Ber4PPrYr0LoTi1WUasiMceM=",
+    "botId": "st-953e931b-1fe5-5bcc-9bb7-1b9bd4226947",
+    "chatBotName": "SDKBot",
+    "identity": "example@kore.com",
+    "jwt_server_url":
+        "https://mk2r2rmj21.execute-api.us-east-1.amazonaws.com/dev/",
+    "server_url": "https://platform.kore.ai",
+    "isReconnect": false,
+    "jwtToken": ""
+  };
+```
+
+3) Below is the method to be called from the parent application before connecting to the bot. Which intializes the SDK
+```
+Future<void> botInitialize() async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'Callbacks') {
+        // Do your logic here.
         debugPrint("Event from native ${handler.arguments}");
       }
     });
-  try {
-    final String result = await platform.invokeMethod('getChatWindow');
-  } on PlatformException catch (e) {}
-}
+
+    try {
+      final String config =
+          await platform.invokeMethod('initialize', botConfig);
+    } on PlatformException catch (e) {}
+  }
+```
+4) Below is the method to be called to establish the bot connection
+```
+“connectToBot” can be changed as per requirement.
+Future<void> connectToBot() async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'Callbacks') {
+        // Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
+
+    try {
+      final String result =
+          await platform.invokeMethod('getChatWindow', botConfig);
+    } on PlatformException catch (e) {}
+  }
 
 ```
-On button press the above mentioned method can be called to initiate the chat socket as below
+5) On button press the above mentioned method can be called to initiate the chat socket as below
 ```
  children: [
           ElevatedButton(
-            onPressed: _callNativemethod,
+            onPressed: connectToBot,
             child: const Text('Bot Connect'),
           ),
         ],
 ```
 
-All the callbacks from native to the flutter application happens in the below snippet. Users can implement their own logics as per requirement.
+6) All the callbacks from native to the flutter application happens in the below snippet. Users can implement their own logics as per requirement.
 ```
 platform.setMethodCallHandler((handler) async {
     if (handler.method == 'Callbacks') {
@@ -55,29 +93,8 @@ platform.setMethodCallHandler((handler) async {
     });
 
 ```
-Callbacks received are in below json format which can be consumed by the clients and implemented as per requirement.
 
-When fails in fetching jwt token
-```
-{"eventCode":"Error_STS","eventMessage":"STS call failed"}
-
-```
-When fails in Socket(Bot) Connection
-```
-{"eventCode":"Error_Socket","eventMessage":"Socket connection failed"}
-
-```
-When Bot connected successfully
-```
-{"eventCode":"BotConnected","eventMessage":"Bot connected successfully"}
-
-```
-When User clicks the back button on the chat window in IOS or hardware back button in android.
-```
-{"eventCode":"BotClosed","eventMessage":"Bot closed by the user"}
-```
-
-When user wants to send any message to bot below method can be used.
+7) When user wants to send any message to bot below method can be used.
 ```
 “_callSendmethod” can be changed as per requirement.
 Future<void> _callSendmethod(msg) async {
@@ -95,13 +112,68 @@ Future<void> _callSendmethod(msg) async {
   }
 
 ```
-When message sent to bot, bot_reponse can be received through callback in the same method
+8) When message sent to bot, bot_reponse can be received through callback in the same method
 ```
 if (handler.method == 'Callbacks') {
         // Do your logic here.
         debugPrint("Bot response from native ${handler.arguments}");
       }
 ```
+
+10) Below method can be used for getting search results
+```
+Future<void> getSearchResults(searchQuery) async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'Callbacks') {
+        // Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
+
+    try {
+      final String config = await platform
+          .invokeMethod('getSearchResults', {"searchQuery": searchQuery});
+    } on PlatformException catch (e) {}
+  }
+
+```
+
+By using the above method search results can be received in the "Callbacks" so that developer can implement their own logic
+
+11) Below method can be used to get the history of the user chat by providing "offset"(Number of conversations currently in the chat window) and "limit" (Limit of history messages to be received)
+```
+Future<void> getHistoryResults(offset, limit) async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'Callbacks') {
+        // Response will be received here. Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
+
+    try {
+      final String config = await platform.invokeMethod(
+          'getHistoryResults', {"offset": offset, "limit": limit});
+    } on PlatformException catch (e) {}
+  }
+```
+
+12) Below is the method can be used to close the bot.
+```
+Future<void> closeBot() async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'CloseBot') {
+        // Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
+
+    try {
+      final String config = await platform.invokeMethod('closeBot');
+    } on PlatformException catch (e) {}
+  }
+```
+
+
 # For iOS:
 Add below lines in AppDelegate.swift
 
@@ -138,5 +210,3 @@ Add below lines in AppDelegate.swift
   <img width="607" alt="image" src="https://github.com/SudheerJa-Kore/KoreBotflutterplugin/assets/64408292/7a6b82c6-c0f3-4d1c-af1f-e7fbedbbb6d4">
 
   
-
- <img width="576" alt="Screenshot_20240522_162206" src="https://github.com/DocsInternal-Kore/FlutterKoreSocketPlugin/assets/141815208/f3445835-8d78-401e-ad01-822c480cd225">
