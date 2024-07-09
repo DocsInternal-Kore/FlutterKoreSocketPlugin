@@ -136,6 +136,19 @@ class _MyHomePageState extends State<MyHomePage> {
     } on PlatformException catch (e) {}
   }
 
+  Future<void> closeBot() async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'CloseBot') {
+        // Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
+
+    try {
+      final String config = await platform.invokeMethod('closeBot');
+    } on PlatformException catch (e) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     botInitialize();

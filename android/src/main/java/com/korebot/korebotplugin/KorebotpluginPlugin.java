@@ -105,13 +105,14 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                     makeStsJwtCallWithConfig(false);
                 }
                 break;
-
             case "getSearchResults":
                 getSearchResults(call.argument("searchQuery"));
                 break;
-
             case "getHistoryResults":
                 getHistoryResults(call.argument("offset"), call.argument("limit"));
+                break;
+            case "closeBot":
+                if (botClient != null) botClient.disconnect();
                 break;
 
         }
