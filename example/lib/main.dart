@@ -43,7 +43,7 @@ class MyHomePage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
-  final String title, subtitle;
+  final String title;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -51,8 +51,20 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   static const platform = MethodChannel('kore.botsdk/chatbot');
-
+  var botConfig = {
+    "clientId": "cs-47e5f4e6-0621-563d-a3fb-2d1f3ab94750",
+    "clientSecret": "TvctzsjB/iewjdddKi2Ber4PPrYr0LoTi1WUasiMceM=",
+    "botId": "st-953e931b-1fe5-5bcc-9bb7-1b9bd4226947",
+    "chatBotName": "SDKBot",
+    "identity": "example@kore.com",
+    "jwt_server_url":
+        "https://mk2r2rmj21.execute-api.us-east-1.amazonaws.com/dev/",
+    "server_url": "https://platform.kore.ai",
+    "isReconnect": false,
+    "jwtToken": ""
+  };
   final myController = TextEditingController();
+  final searchTxtfield = TextEditingController();
 
   Future<void> _callNativemethod() async {
     platform.setMethodCallHandler((handler) async {
@@ -63,7 +75,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     try {
-      final String result = await platform.invokeMethod('getChatWindow');
+      final String result =
+          await platform.invokeMethod('getChatWindow', botConfig);
     } on PlatformException catch (e) {}
   }
 
@@ -81,8 +94,51 @@ class _MyHomePageState extends State<MyHomePage> {
     } on PlatformException catch (e) {}
   }
 
+  Future<void> botInitialize() async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'Callbacks') {
+        // Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
+
+    try {
+      final String config =
+          await platform.invokeMethod('initialize', botConfig);
+    } on PlatformException catch (e) {}
+  }
+
+  Future<void> getSearchResults(searchQuery) async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'Callbacks') {
+        // Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
+
+    try {
+      final String config = await platform
+          .invokeMethod('getSearchResults', {"searchQuery": searchQuery});
+    } on PlatformException catch (e) {}
+  }
+
+  Future<void> getHistoryResults(offset, limit) async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'Callbacks') {
+        // Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
+
+    try {
+      final String config = await platform.invokeMethod(
+          'getHistoryResults', {"offset": offset, "limit": limit});
+    } on PlatformException catch (e) {}
+  }
+
   @override
   Widget build(BuildContext context) {
+    botInitialize();
     return Material(
       child: Center(
         child: Column(
@@ -110,6 +166,28 @@ class _MyHomePageState extends State<MyHomePage> {
               child: ElevatedButton(
                   onPressed: () => {_callSendmethod(myController.text)},
                   child: const Text('Send Message')),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              child: TextFormField(
+                controller: searchTxtfield,
+                decoration: const InputDecoration(
+                  border: UnderlineInputBorder(),
+                  labelText: 'Search query',
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              child: ElevatedButton(
+                  onPressed: () => {getSearchResults(searchTxtfield.text)},
+                  child: const Text('Search Query')),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              child: ElevatedButton(
+                  onPressed: () => {getHistoryResults(0, 10)},
+                  child: const Text('Get History')),
             ),
           ],
         ),
