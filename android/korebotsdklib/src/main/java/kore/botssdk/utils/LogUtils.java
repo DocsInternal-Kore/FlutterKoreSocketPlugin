@@ -2,7 +2,7 @@ package kore.botssdk.utils;
 
 public class LogUtils
 {
-    static boolean LOG = true;
+    static boolean LOG = false;
 
     public static void enableLog(boolean enable) {
         LOG = enable;

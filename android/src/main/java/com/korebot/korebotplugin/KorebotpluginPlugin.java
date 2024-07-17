@@ -182,7 +182,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
             @Override
             public void onFailure(@NonNull Call<JWTTokenResponse> call, @NonNull Throwable t) {
-                LogUtils.d("token refresh", t.getMessage());
+                LogUtils.e("token refresh", t.getMessage());
             }
         });
     }
