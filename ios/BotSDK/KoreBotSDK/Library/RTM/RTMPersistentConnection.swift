@@ -103,7 +103,7 @@ open class RTMPersistentConnection : NSObject, WebSocketDelegate {
                     connectionDelegate?.didReceiveMessageAck(ack)
                 }
             case "bot_response":
-                print("received: \(responseObject)")
+               // print("received: \(responseObject)")
                 guard let array = responseObject["message"] as? Array<[String: Any]>, array.count > 0 else {
                     return
                 }
@@ -248,7 +248,7 @@ open class RTMPersistentConnection : NSObject, WebSocketDelegate {
                     connectionDelegate?.didReceiveMessageAck(ack)
                 }
             case "bot_response":
-                print("received: \(responseObject)")
+                //print("received: \(responseObject)")
                 guard let array = responseObject["message"] as? Array<[String: Any]>, array.count > 0 else {
                     return
                 }
