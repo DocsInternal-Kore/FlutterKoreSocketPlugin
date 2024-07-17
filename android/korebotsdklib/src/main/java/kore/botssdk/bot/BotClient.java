@@ -115,8 +115,46 @@ public class BotClient {
             RestResponse.BotPayLoad botPayLoad = new RestResponse.BotPayLoad();
 
             RestResponse.BotMessage botMessage = new RestResponse.BotMessage(msg);
-            customData.put("botToken", getAccessToken());
-            botMessage.setCustomData(customData);
+            RestResponse.BotCustomData msgData = new RestResponse.BotCustomData();
+            msgData.put("botToken", getAccessToken());
+            botMessage.setCustomData(msgData);
+            botPayLoad.setMessage(botMessage);
+            botPayLoad.setBotInfo(botInfoModel);
+
+            RestResponse.Meta meta = new RestResponse.Meta(TimeZone.getDefault().getID(), Locale.getDefault().getISO3Language());
+            botPayLoad.setMeta(meta);
+
+            Gson gson = new Gson();
+            String jsonPayload = gson.toJson(botPayLoad);
+
+            LogUtils.d("BotClient", "Payload : " + jsonPayload);
+            SocketWrapper.getInstance(mContext).sendMessage(jsonPayload);
+        }
+    }
+
+    /**
+     * Method to send messages over socket.
+     * It uses FIFO pattern to first send if any pending requests are present
+     * following current request later onward.
+     * <p/>
+     * pass 'msg' as NULL on reconnection of the socket to empty the pool
+     * by sending messages from the pool.
+     *
+     * @param msg
+     */
+    public void sendMessage(String msg, RestResponse.BotCustomData customData) {
+        if (msg != null && !msg.isEmpty()) {
+
+            RestResponse.BotPayLoad botPayLoad = new RestResponse.BotPayLoad();
+            RestResponse.BotMessage botMessage = new RestResponse.BotMessage(msg);
+
+            RestResponse.BotCustomData msgData = new RestResponse.BotCustomData();
+            msgData.put("botToken", getAccessToken());
+
+            if (customData != null)
+                msgData.putAll(customData);
+
+            botMessage.setCustomData(msgData);
             botPayLoad.setMessage(botMessage);
             botPayLoad.setBotInfo(botInfoModel);
 

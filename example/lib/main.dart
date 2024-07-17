@@ -61,8 +61,10 @@ class _MyHomePageState extends State<MyHomePage> {
         "https://mk2r2rmj21.execute-api.us-east-1.amazonaws.com/dev/",
     "server_url": "https://platform.kore.ai",
     "isReconnect": false,
-    "jwtToken": ""
+    "jwtToken": "",
+    "custom_data": {"age": 34, "gender": "M"}
   };
+
   final myController = TextEditingController();
   final searchTxtfield = TextEditingController();
 
@@ -89,8 +91,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     try {
-      final String result =
-          await platform.invokeMethod('sendMessage', {"message": msg});
+      final String result = await platform.invokeMethod('sendMessage', {
+        "message": msg,
+        "msg_data": {"size": 40, "gender": "M"}
+      });
     } on PlatformException catch (e) {}
   }
 

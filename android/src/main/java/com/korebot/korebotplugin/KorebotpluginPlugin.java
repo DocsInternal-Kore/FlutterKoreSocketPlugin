@@ -25,6 +25,7 @@ import kore.botssdk.models.JWTTokenResponse;
 import kore.botssdk.net.BotJWTRestBuilder;
 import kore.botssdk.net.BotRestBuilder;
 import kore.botssdk.net.RestBuilder;
+import kore.botssdk.net.RestResponse;
 import kore.botssdk.net.SDKConfiguration;
 import kore.botssdk.utils.LogUtils;
 import kore.botssdk.websocket.SocketConnectionListener;
@@ -77,13 +78,24 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                     sharedPreferences.edit().putString(JWT_TOKEN, call.argument("jwtToken")).apply();
                 } else if (StringUtils.isEmpty(sharedPreferences.getString(JWT_TOKEN, ""))) makeStsJwtCallWithConfig(true);
 
-                botClient = new BotClient(context);
+                HashMap<String, Object> data = call.argument("custom_data");
+                if (data != null) {
+                    RestResponse.BotCustomData customData = new RestResponse.BotCustomData();
+                    customData.putAll(data);
+                    SDKConfiguration.Server.setCustomData(customData);
+                    botClient = new BotClient(context, customData);
+                }
 
                 //Initiating bot connection once connected callbacks will be fired on respective actions
                 botClient.connectAsAnonymousUser(sharedPreferences.getString(JWT_TOKEN, ""), SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
                 break;
             case "sendMessage":
-                botClient.sendMessage(call.argument("message"));
+                HashMap<String, Object> msg_data = call.argument("msg_data");
+                if (msg_data != null) {
+                    RestResponse.BotCustomData customData = new RestResponse.BotCustomData();
+                    customData.putAll(msg_data);
+                    botClient.sendMessage(call.argument("message"), customData);
+                } else botClient.sendMessage(call.argument("message"));
                 break;
             case "initialize":
                 SDKConfiguration.Client.bot_id = call.argument("botId");
