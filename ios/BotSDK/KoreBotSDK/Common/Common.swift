@@ -45,7 +45,7 @@ open class Common : NSObject {
     }
 }
 
-open class Utilities: NSObject {
+public class Utilities: NSObject {
     // MARK:-
     public static func stringFromJSONObject(object: Any) -> String? {
         var jsonString: String? = nil

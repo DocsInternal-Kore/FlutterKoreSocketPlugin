@@ -29,17 +29,49 @@ public class SearchConnect: NSObject {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public func botConnect(_ koreClientId: String!, koreClientSecret: String!, koreBotID: String!, KoreBotName: String!, Koreidentity: String!, KoreisAnonymous: Bool!,jwt_Server_Url:String,botServerUrl:String, customJWToken: String, isReconnect: Bool){
-        SDKConfiguration.botConfig.clientId = koreClientId
-        SDKConfiguration.botConfig.clientSecret = koreClientSecret
-        SDKConfiguration.botConfig.botId = koreBotID
-        SDKConfiguration.botConfig.chatBotName = KoreBotName
-        SDKConfiguration.botConfig.identity = Koreidentity
-        SDKConfiguration.botConfig.isAnonymous = KoreisAnonymous
-        SDKConfiguration.serverConfig.JWT_SERVER = jwt_Server_Url
+    public func botConnect(botConfig:[String: Any]?){
+        let configDetails = botConfig
+        guard let clientId = configDetails?["clientId"] as? String else{
+            return
+        }
+        guard let clientSecret = configDetails?["clientSecret"] as? String else{
+            return
+        }
+        guard let botId = configDetails?["botId"] as? String else{
+            return
+        }
+        guard let chatBotName = configDetails?["chatBotName"] as? String else{
+            return
+        }
+        guard let identity = configDetails?["identity"] as? String else{
+            return
+        }
+        guard let jwtToken = configDetails?["jwtToken"] as? String else{
+            return
+        }
+        guard let jwtServerUrl = configDetails?["jwt_server_url"] as? String else{
+            return
+        }
+        guard let botServerUrl = configDetails?["server_url"] as? String else{
+            return
+        }
+        guard let isReconnect = configDetails?["isReconnect"] as? Bool else{
+            return
+        }
+        guard let custom_data = configDetails?["custom_data"] as? [String: Any] else{
+            return
+        }
+        SDKConfiguration.botConfig.clientId = clientId
+        SDKConfiguration.botConfig.clientSecret = clientSecret
+        SDKConfiguration.botConfig.botId = botId
+        SDKConfiguration.botConfig.chatBotName = chatBotName
+        SDKConfiguration.botConfig.identity = identity
+        SDKConfiguration.botConfig.customJWToken = jwtToken
+        SDKConfiguration.botConfig.isAnonymous = false
+        SDKConfiguration.serverConfig.JWT_SERVER = jwtServerUrl
         SDKConfiguration.serverConfig.BOT_SERVER = botServerUrl
-        SDKConfiguration.botConfig.customJWToken = customJWToken
         SDKConfiguration.botConfig.isReconnect =  isReconnect
+        SDKConfiguration.botConfig.customData = custom_data
         
         kaBotClient.connect(block: { [weak self] (client) in
             print("Sucess")
@@ -54,8 +86,8 @@ public class SearchConnect: NSObject {
         }
     }
     
-    public func sendMessage(_ message: String, options: [String: Any]?){
-        kaBotClient.sendMessage(message, options: options)
+    public func sendMessage(_ message: String, options: [String: Any]?, messageData: [String: Any]?){
+        kaBotClient.sendMessage(message, options: options, messageData: messageData)
     }
     // MARK: chat history
     public func getChatHistory(offset:Int, limit:Int){
@@ -68,12 +100,48 @@ public class SearchConnect: NSObject {
         })
     }
     // MARK: get JWT token request for search
-    public func getJwTokenWithClientId(_ clientId: String!, clientSecret: String!, botID: String!, identity: String!, isAnonymous: Bool!,jwtServerUrl:String,botServerUrl:String, customJWToken:String!,isReconnect:Bool, success:((_ jwToken: String?) -> Void)?, failure:((_ error: Error) -> Void)?) {
+    public func getJwTokenWithClientId(botConfig:[String:Any]?, success:((_ jwToken: String?) -> Void)?, failure:((_ error: Error) -> Void)?) {
+        
+        let configDetails = botConfig
+        guard let clientId = configDetails?["clientId"] as? String else{
+            return
+        }
+        guard let clientSecret = configDetails?["clientSecret"] as? String else{
+            return
+        }
+        guard let botId = configDetails?["botId"] as? String else{
+            return
+        }
+        guard let chatBotName = configDetails?["chatBotName"] as? String else{
+            return
+        }
+        guard let identity = configDetails?["identity"] as? String else{
+            return
+        }
+        guard let customJWToken = configDetails?["jwtToken"] as? String else{
+            return
+        }
+        guard let jwtServerUrl = configDetails?["jwt_server_url"] as? String else{
+            return
+        }
+        guard let botServerUrl = configDetails?["server_url"] as? String else{
+            return
+        }
+        guard let isReconnect = configDetails?["isReconnect"] as? Bool else{
+            return
+        }
+        guard let custom_data = configDetails?["custom_data"] as? [String: Any] else{
+            return
+        }
+        SDKConfiguration.botConfig.customData = custom_data
+        
+        let isAnonymous: Bool = false
+        
         if customJWToken != ""{
             SDKConfiguration.botConfig.customJWToken = customJWToken
             success?(customJWToken)
         }else{
-            SDKConfiguration.botConfig.botId = botID
+            SDKConfiguration.botConfig.botId = botId
             SDKConfiguration.serverConfig.JWT_SERVER = jwtServerUrl
             SDKConfiguration.serverConfig.BOT_SERVER = botServerUrl
             SDKConfiguration.botConfig.isReconnect = isReconnect

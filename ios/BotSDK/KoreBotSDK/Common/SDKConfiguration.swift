@@ -29,7 +29,7 @@ public class SDKConfiguration: NSObject {
 
        public static var isAnonymous = true // This should be either true (in case of known-user) or false (in-case of anonymous user).
        public static var customJWToken = "" // Custom JWToken
-       
+       public static var customData : [String: Any] = [:]
        public static var isReconnect = false
     }
 

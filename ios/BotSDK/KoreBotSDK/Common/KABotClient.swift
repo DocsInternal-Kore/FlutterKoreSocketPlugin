@@ -120,8 +120,8 @@ open class KABotClient: NSObject {
     
     
     // MARK: -
-    public func sendMessage(_ message: String, options: [String: Any]?) {
-        botClient.sendMessage(message, options: options)
+    public func sendMessage(_ message: String, options: [String: Any]?, messageData: [String: Any]?) {
+        botClient.sendMessage(message, options: options, messageData: messageData)
     }
     
     // methods
@@ -222,7 +222,14 @@ open class KABotClient: NSObject {
             identity =  SDKConfiguration.botConfig.identity
         }
         //let botInfo: [String: Any] = ["chatBot": chatBotName, "taskBotId": botId, "customData": customData]
-        let botInfo: [String: Any] = ["chatBot": chatBotName, "taskBotId": botId]
+        //let botInfo: [String: Any] = ["chatBot": chatBotName, "taskBotId": botId]
+        var botInfo: [String: Any] = [:]
+        if SDKConfiguration.botConfig.customData.isEmpty{
+            botInfo = ["chatBot": chatBotName, "taskBotId": botId]
+        }else{
+            let customData: [String: Any] = SDKConfiguration.botConfig.customData
+            botInfo = ["chatBot": chatBotName, "taskBotId": botId,"customData": customData]
+        }
         if SDKConfiguration.botConfig.customJWToken != ""{
             let jwToken =  SDKConfiguration.botConfig.customJWToken
             self.botClient.initialize(botInfoParameters: botInfo, customData: [:])
