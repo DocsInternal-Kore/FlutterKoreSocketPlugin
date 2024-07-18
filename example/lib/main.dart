@@ -121,8 +121,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     try {
-      final String config = await platform
-          .invokeMethod('getSearchResults', {"searchQuery": searchQuery});
+      final String config = await platform.invokeMethod('getSearchResults', {
+        "searchQuery": searchQuery,
+        "context_data": {"size": 40, "gender": "M"}
+      });
     } on PlatformException catch (e) {}
   }
 

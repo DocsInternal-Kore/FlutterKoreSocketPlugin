@@ -118,7 +118,11 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                 }
                 break;
             case "getSearchResults":
-                getSearchResults(call.argument("searchQuery"));
+                HashMap<String, Object> context_data = call.argument("context_data");
+                if (context_data != null) {
+                    getSearchResults(call.argument("searchQuery"), context_data);
+                } else
+                    getSearchResults(call.argument("searchQuery"));
                 break;
             case "getHistoryResults":
                 getHistoryResults(call.argument("offset"), call.argument("limit"));
@@ -225,6 +229,32 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
         });
     }
 
+    private void getSearchResults(String searchQuery, HashMap<String, Object> contextData) {
+        retrofit2.Call<ResponseBody> getBankingConfigService = BotRestBuilder.getBotRestService().getAdvancedSearch(SDKConfiguration.Client.bot_id, sharedPreferences.getString(JWT_TOKEN, ""), getSearchObject(searchQuery, contextData));
+        getBankingConfigService.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(@NonNull retrofit2.Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+
+                if (response.isSuccessful()) {
+                    try {
+                        if (response.body() != null) channel.invokeMethod("Callbacks", new Gson().toJson(response.body().string()));
+                        else channel.invokeMethod("Callbacks", "No response received.");
+                    } catch (IOException e) {
+                        channel.invokeMethod("Callbacks", "No response received.");
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    channel.invokeMethod("Callbacks", "No response received.");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                LogUtils.d("token refresh", t.getMessage());
+            }
+        });
+    }
+
     private void getHistoryResults(final int _offset, final int limit) {
         retrofit2.Call<ResponseBody> getBankingConfigService = RestBuilder.getRestAPI().getBotHistory("bearer " + SocketWrapper.getInstance(context).getAccessToken(), SDKConfiguration.Client.bot_id, limit, _offset, true);
         getBankingConfigService.enqueue(new Callback<>() {
@@ -264,6 +294,13 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
     private HashMap<String, Object> getSearchObject(String query) {
         HashMap<String, Object> hsh = new HashMap<>();
         hsh.put("query", query);
+        return hsh;
+    }
+
+    private HashMap<String, Object> getSearchObject(String query, HashMap<String, Object> contextData) {
+        HashMap<String, Object> hsh = new HashMap<>();
+        hsh.put("query", query);
+        hsh.put("customData", contextData);
         return hsh;
     }
 
