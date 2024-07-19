@@ -218,33 +218,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void getSearchResults(String searchQuery) {
         retrofit2.Call<ResponseBody> getBankingConfigService = BotRestBuilder.getBotRestService().getAdvancedSearch(SDKConfiguration.Client.bot_id, sharedPreferences.getString(JWT_TOKEN, ""), getSearchObject(searchQuery));
-        getBankingConfigService.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(@NonNull retrofit2.Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
-
-                if (response.isSuccessful()) {
-                    try {
-                        if (response.body() != null) channel.invokeMethod("Callbacks", new Gson().toJson(response.body().string()));
-                        else channel.invokeMethod("Callbacks", "No response received.");
-                    } catch (IOException e) {
-                        channel.invokeMethod("Callbacks", "No response received.");
-                        throw new RuntimeException(e);
-                    }
-                } else {
-                    channel.invokeMethod("Callbacks", "No response received.");
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                LogUtils.d("token refresh", t.getMessage());
-            }
-        });
-    }
-
-    private void getProcessSearch(String sessionId) {
-        retrofit2.Call<ResponseBody> getBankingConfigService = BotRestBuilder.getBotRestService().getAdvancedSearch(SDKConfiguration.Client.bot_id, sharedPreferences.getString(JWT_TOKEN, ""), getSearchObject(sessionId));
-        getBankingConfigService.enqueue(new Callback<ResponseBody>() {
+        getBankingConfigService.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull retrofit2.Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
 
@@ -269,11 +243,27 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void getSearchResults(String searchQuery, HashMap<String, Object> contextData) {
-        retrofit2.Call<ResponseBody> getBankingConfigService = BotRestBuilder.getBotRestService().getAdvancedSearch(SDKConfiguration.Client.bot_id, sharedPreferences.getString(JWT_TOKEN, ""), getSearchObject(searchQuery, contextData));
-        getBankingConfigService.enqueue(new Callback<ResponseBody>() {
+        retrofit2.Call<ResponseBody> getBankingConfigService = BotJWTRestBuilder.getRetailJWTRestAPI().getSearchClassify(SDKConfiguration.Client.stage, "Bearer "+sharedPreferences.getString(RETAIL_JWT_TOKEN, ""), getClassifyObject(searchQuery, contextData));
+        getBankingConfigService.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull retrofit2.Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
 
+                if (response.isSuccessful() && response.body() != null) {
+                    getProcessResults();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                LogUtils.d("token refresh", t.getMessage());
+            }
+        });
+    }
+    void getProcessResults() {
+        retrofit2.Call<ResponseBody> getBankingConfigService = BotJWTRestBuilder.getRetailJWTRestAPI().getProcessSearch(SDKConfiguration.Client.stage, "Bearer "+sharedPreferences.getString(RETAIL_JWT_TOKEN, ""), getProcessObject());
+        getBankingConfigService.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull retrofit2.Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     try {
                         if (response.body() != null) channel.invokeMethod("Callbacks", new Gson().toJson(response.body().string()));
@@ -341,10 +331,21 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
         return hsh;
     }
 
-    private HashMap<String, Object> getSearchObject(String query, HashMap<String, Object> contextData) {
+    private HashMap<String, Object> getClassifyObject(String query, HashMap<String, Object> contextData) {
         HashMap<String, Object> hsh = new HashMap<>();
-        hsh.put("query", query);
-//        hsh.put("customData", contextData);
+        hsh.put("query", SDKConfiguration.getQuery(query, contextData));
+        hsh.put("sessionId", sharedPreferences.getString(RETAIL_JWT_TOKEN, SDKConfiguration.Client.bot_id));
+        hsh.put("indexName", SDKConfiguration.Client.indexName);
+        hsh.put("namespace", SDKConfiguration.Client.indexName);
+        return hsh;
+    }
+    private HashMap<String, Object> getProcessObject() {
+        HashMap<String, Object> hsh = new HashMap<>();
+        hsh.put("sessionId", sharedPreferences.getString(RETAIL_JWT_TOKEN, SDKConfiguration.Client.bot_id));
+        hsh.put("indexName", SDKConfiguration.Client.indexName);
+        hsh.put("namespace", SDKConfiguration.Client.indexName);
+        hsh.put("metaFilterKeys", SDKConfiguration.Client.metaFilterKeys);
+        hsh.put("metaOptions", SDKConfiguration.getMetaOptions());
         return hsh;
     }
 

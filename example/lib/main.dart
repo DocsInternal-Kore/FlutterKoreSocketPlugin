@@ -129,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       final String config = await platform.invokeMethod('getSearchResults', {
         "searchQuery": searchQuery,
-        "context_data": {"size": 40, "gender": "M"}
+        "context_data": {"color": "Black", "gender": "M"}
       });
     } on PlatformException catch (e) {}
   }

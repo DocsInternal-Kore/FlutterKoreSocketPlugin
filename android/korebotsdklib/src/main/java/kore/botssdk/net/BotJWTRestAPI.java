@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import kore.botssdk.models.JWTTokenResponse;
 import kore.botssdk.models.RetailTokenResponse;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Header;
@@ -20,9 +21,14 @@ public interface BotJWTRestAPI {
     //@POST("/api/users/sts")
     @POST("users/sts")
     Call<JWTTokenResponse> getJWTToken(@Body HashMap<String, Object> jsonObject);
-    //@POST("/api/users/sts")
+
     @POST("auth/token")
     Call<RetailTokenResponse> getRetailJWTToken(@Header("stage") String stage, @Body HashMap<String, Object> jsonObject);
+
+    @POST("semanticSearch/v2/cx/classifyQuery")
+    Call<ResponseBody> getSearchClassify(@Header("stage") String stage, @Header("Authorization") String token, @Body HashMap<String, Object> jsonObject);
+    @POST("semanticSearch/v2/cx/processQuery")
+    Call<ResponseBody> getProcessSearch(@Header("stage") String stage, @Header("Authorization") String token, @Body HashMap<String, Object> jsonObject);
 
     // Get JWT Token
     @POST("/api" + URL_VERSION + "/users/jwttoken")

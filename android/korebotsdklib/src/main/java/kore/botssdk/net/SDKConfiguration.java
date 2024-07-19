@@ -8,7 +8,17 @@ import android.annotation.SuppressLint;
 import android.util.Log;
 import android.view.View;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class is for defining properties
@@ -99,6 +109,7 @@ public class SDKConfiguration {
         public static String bot_name = "";
         public static String bot_id = "";
         public static String indexName = "";
+        public static String[] metaFilterKeys = {"gender", "price", "description"};
         public static String namespace = "";
         public static final String tenant_id = "605da1dbb5f6f00badadb665";
         public static final boolean enablePanel = false;
@@ -114,7 +125,7 @@ public class SDKConfiguration {
         // for webhook based communication use following option
         public static String webhookURL = "https://qa1-bots.kore.ai/chatbot/v2/webhook/st-ea1b128f-7895-581a-8c87-bbfe3b9f1ff1";
         public static int apiVersion = 2;
-        public static String stage = "uat";
+        public static String stage = "dev";
         //webhookURL:'https://qa-bots.kore.ai/chatbot/v2/webhook/st-5840c71a-ec0b-516e-8d9a-f9e608ea8c4b',
         //webhookURL:'https://qa-bots.kore.ai/chatbot/hooks/st-5840c71a-ec0b-516e-8d9a-f9e608ea8c4b/hookInstance/ivrInst-62c362b9-5f88-5ec5-9f3f-7c0eb9801e70'
         //webhookURL:'https://qa-bots.kore.ai/chatbot/v2/webhook/st-5840c71a-ec0b-516e-8d9a-f9e608ea8c4b/hookInstance/ivrInst-62c362b9-5f88-5ec5-9f3f-7c0eb9801e70'
@@ -239,6 +250,42 @@ public class SDKConfiguration {
 
     public static HashMap<String, View> getCustomTemplateView() {
         return hsh;
+    }
+    public static JsonArray getMetaOptions() {
+        JsonArray jsonArray = new JsonArray();
+        JsonObject jsonOutObject = new JsonObject();
+        try
+        {
+            JsonObject jsonOneObject = new JsonObject();
+            jsonOneObject.addProperty("operator", "arithmetic");
+            JsonObject jsonTwoObject = new JsonObject();
+            jsonTwoObject.addProperty("operator", "'");
+            jsonOutObject.add("price", jsonOneObject);
+            jsonOutObject.add("gender", jsonTwoObject);
+            jsonArray.add(jsonOutObject);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return jsonArray;
+    }
+
+    public static String getQuery(String query, HashMap<String, Object> contextData)
+    {
+        StringBuilder queryString = new StringBuilder();
+        queryString.append(query);
+        queryString.append(" ");
+
+        for (Map.Entry<String, Object> entry : contextData.entrySet()) {
+            queryString.append(entry.getKey());
+            queryString.append(":");
+            queryString.append(entry.getValue());
+            queryString.append(" ");
+        }
+
+        return queryString.toString().trim();
     }
 
 }
