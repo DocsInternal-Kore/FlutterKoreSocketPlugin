@@ -141,7 +141,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
         @Override
         public void onTextMessage(String payload) {
-            channel.invokeMethod("Callbacks", payload);
+            channel.invokeMethod("Callbacks", new Gson().toJson(payload));
         }
 
         @Override
