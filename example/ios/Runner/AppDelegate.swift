@@ -24,6 +24,14 @@ import korebotplugin
                 guard let botConfig = call.arguments else {
                     return
                 }
+                NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "CallbacksNotification"), object: nil)
+                
+                NotificationCenter.default.addObserver(self, selector: #selector(self.callbacksMethod), name: NSNotification.Name(rawValue: "CallbacksNotification"), object: nil)
+                
+                NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "TokenExpiryNotification"), object: nil)
+                
+                NotificationCenter.default.addObserver(self, selector: #selector(self.tokenExpiry), name: NSNotification.Name(rawValue: "TokenExpiryNotification"), object: nil)
+                
                 //Set Korebot Config
                 self.searchConnect.botConnect(botConfig: botConfig as? [String : Any])
                 
@@ -47,10 +55,6 @@ import korebotplugin
                 NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "CallbacksNotification"), object: nil)
                 
                 NotificationCenter.default.addObserver(self, selector: #selector(self.callbacksMethod), name: NSNotification.Name(rawValue: "CallbacksNotification"), object: nil)
-                
-                NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "TokenExpiryNotification"), object: nil)
-                
-                NotificationCenter.default.addObserver(self, selector: #selector(self.tokenExpiry), name: NSNotification.Name(rawValue: "TokenExpiryNotification"), object: nil)
                 
                 guard let botConfig = call.arguments else {
                     return
@@ -78,12 +82,10 @@ import korebotplugin
                     }
                 } failure: { error in
                     print(error)
-                    let errorDic = ["error": "No Search can be performed on the query provided"]
-                    self.flutterMethodChannel?.invokeMethod("Callbacks", arguments: errorDic)
+                    self.flutterMethodChannel?.invokeMethod("Callbacks", arguments: "No Search can be performed on the query provided")
                     
                 }
 
-                
             case "getHistoryResults":
                 guard let history = call.arguments else {
                     return
