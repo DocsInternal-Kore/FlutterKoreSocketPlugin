@@ -103,6 +103,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                 SDKConfiguration.Client.bot_id = call.argument("botId");
                 SDKConfiguration.Client.indexName = call.argument("indexName");
                 SDKConfiguration.Client.namespace = call.argument("namespace");
+                SDKConfiguration.Client.stage = call.argument("stage");
                 SDKConfiguration.Server.RETAIL_SERVER_URL = call.argument("retail_server_url");
 
                 //For authorisation jwtToken

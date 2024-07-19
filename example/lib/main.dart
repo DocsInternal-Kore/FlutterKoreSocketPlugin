@@ -68,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
     "botId": "st-953e931b-1fe5-5bcc-9bb7-1b9bd4226947",
     "indexName": "tedbaker-test",
     "namespace": "tedbaker-gender-v1",
+    "stage": "dev",
     "retail_server_url": "https://retailassist-poc.kore.ai/"
   };
 
