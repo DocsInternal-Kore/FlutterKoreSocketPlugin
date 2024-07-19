@@ -250,12 +250,14 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
                 if (response.isSuccessful() && response.body() != null) {
                     getProcessResults();
+                } else {
+                    channel.invokeMethod("Callbacks", "No Search can be performed on the query provided.");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                LogUtils.d("token refresh", t.getMessage());
+                channel.invokeMethod("Callbacks", "No Search can be performed on the query provided.");
             }
         });
     }
@@ -267,19 +269,19 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                 if (response.isSuccessful()) {
                     try {
                         if (response.body() != null) channel.invokeMethod("Callbacks", new Gson().toJson(response.body().string()));
-                        else channel.invokeMethod("Callbacks", "No response received.");
+                        else channel.invokeMethod("Callbacks", "No Search can be performed on the query provided.");
                     } catch (IOException e) {
-                        channel.invokeMethod("Callbacks", "No response received.");
+                        channel.invokeMethod("Callbacks", "No Search can be performed on the query provided.");
                         throw new RuntimeException(e);
                     }
                 } else {
-                    channel.invokeMethod("Callbacks", "No response received.");
+                    channel.invokeMethod("Callbacks", "No Search can be performed on the query provided.");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                LogUtils.d("token refresh", t.getMessage());
+                channel.invokeMethod("Callbacks", "No Search can be performed on the query provided.");
             }
         });
     }
