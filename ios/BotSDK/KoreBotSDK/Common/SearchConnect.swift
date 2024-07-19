@@ -19,7 +19,9 @@ public class SearchConnect: NSObject {
         return Session(configuration: configuration)
     }()
     
-    var searchJwtToken = ""
+    var searchAccessToken = ""
+    var searchAccessTokenType = ""
+    var searchBotConfig = [String:Any]()
     // MARK: - init
     public override init() {
         super.init()
@@ -100,7 +102,7 @@ public class SearchConnect: NSObject {
         })
     }
     // MARK: get JWT token request for search
-    public func getJwTokenWithClientId(botConfig:[String:Any]?, success:((_ jwToken: String?) -> Void)?, failure:((_ error: Error) -> Void)?) {
+    public func getJwTokenWithClientIdOld(botConfig:[String:Any]?, success:((_ jwToken: String?) -> Void)?, failure:((_ error: Error) -> Void)?) {
         
         let configDetails = botConfig
         guard let clientId = configDetails?["clientId"] as? String else{
@@ -164,27 +166,27 @@ public class SearchConnect: NSObject {
                 if let _ = response.error {
                     let error: NSError = NSError(domain: "bot", code: 100, userInfo: [:])
                     failure?(error)
-                    self.searchJwtToken = ""
+                    //self.searchJwtToken = ""
                     SDKConfiguration.botConfig.customJWToken = ""
                     return
                 }
                 if let dictionary = response.value as? [String: Any],
                    let jwToken = dictionary["jwt"] as? String {
-                    self.searchJwtToken = jwToken
+                    //self.searchJwtToken = jwToken
                     SDKConfiguration.botConfig.customJWToken = jwToken
                     success?(jwToken)
                 } else {
                     let error: NSError = NSError(domain: "bot", code: 100, userInfo: [:])
                     failure?(error)
-                    self.searchJwtToken = ""
+                    //self.searchJwtToken = ""
                     SDKConfiguration.botConfig.customJWToken = ""
                 }
             }
         }
-        
+            
     }
     
-    public func getSearchResults(_ text: String!, success:((_ dictionary: [String: Any]) -> Void)?, failure:((_ error: Error) -> Void)?) {
+    public func getSearchResultsOld(_ text: String!, success:((_ dictionary: [String: Any]) -> Void)?, failure:((_ error: Error) -> Void)?) {
         let urlString: String = "\(SDKConfiguration.serverConfig.BOT_SERVER)/api/public/stream/\(SDKConfiguration.botConfig.botId)/advancedSearch"
         let authorizationStr = "\(SDKConfiguration.botConfig.customJWToken)"
         let headers: HTTPHeaders = [
@@ -217,3 +219,137 @@ public class SearchConnect: NSObject {
 
 }
 
+extension SearchConnect{
+    public func getJwTokenWithClientId(botConfig:[String:Any]?, success:((_ jwToken: String?) -> Void)?, failure:((_ error: Error) -> Void)?) {
+        if let configDetails = botConfig{
+            guard let botId = configDetails["botId"] as? String else{
+                        return
+            }
+            guard let retail_server_url = configDetails["retail_server_url"] as? String else{
+                      return
+            }
+            guard let stage = configDetails["stage"] as? String else{
+                      return
+            }
+            searchBotConfig = configDetails
+            let urlString =  "\(retail_server_url)auth/token"
+            let headers: HTTPHeaders = [
+                "stage": stage
+            ]
+            let parameters: [String: Any] = ["botId": botId as String]
+            let dataRequest = sessionManager.request(urlString, method: .post, parameters: parameters, headers: headers)
+            dataRequest.validate().responseJSON { (response) in
+                if let _ = response.error {
+                    let error: NSError = NSError(domain: "bot", code: 100, userInfo: [:])
+                    failure?(error)
+                    self.searchAccessToken = ""
+                    return
+                }
+                if let dictionary = response.value as? [String: Any],
+                   let accessToken = dictionary["accessToken"] as? String {
+                    self.searchAccessToken = accessToken
+                    if let accessTokenType = dictionary["type"] as? String {
+                        self.searchAccessTokenType = accessTokenType
+                    }
+                    success?(accessToken)
+                } else {
+                    let error: NSError = NSError(domain: "bot", code: 100, userInfo: [:])
+                    failure?(error)
+                    self.searchAccessToken = ""
+                }
+            }
+        }
+        
+        
+    }
+    
+    public func classifyQueryApi(_ text: String!, success:((_ dictionary: [String: Any]) -> Void)?, failure:((_ error: Error) -> Void)?) {
+        let configDetails = searchBotConfig
+        guard let retail_server_url = configDetails["retail_server_url"] as? String else{
+                  return
+        }
+        guard let indexName = configDetails["indexName"] as? String else{
+                  return
+        }
+        guard let namespace = configDetails["namespace"] as? String else{
+                  return
+        }
+        guard let stage = configDetails["stage"] as? String else{
+                  return
+        }
+        let urlString =  "\(retail_server_url)semanticSearch/v2/cx/classifyQuery"
+        let authorizationToken = "\(self.searchAccessTokenType) \(self.searchAccessToken)"
+        let headers: HTTPHeaders = [
+            "stage": stage,
+            "Authorization": authorizationToken
+        ]
+        let parameters: [String: Any]  = ["query": text ?? "", "sessionId": self.searchAccessToken, "indexName": indexName, "namespace": namespace]
+        
+        let dataRequest = sessionManager.request(urlString, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+        dataRequest.validate().responseJSON { (response) in
+            if let _ = response.error {
+                let error: NSError = NSError(domain: "bot", code: 100, userInfo: [:])
+                failure?(error)
+                return
+            }
+            
+            if let dictionary = response.value as? [String: Any]{
+                self.processQueryApi(text) { searchDic in
+                    //print(searchDic)
+                    success?(searchDic)
+                } failure: { error in
+                    failure?(error)
+                }
+            } else {
+                let error: NSError = NSError(domain: "bot", code: 100, userInfo: [:])
+                    failure?(error)
+            }
+        }
+    }
+    
+    public func processQueryApi(_ text: String?, success:((_ dictionary: [String: Any]) -> Void)?, failure:((_ error: Error) -> Void)?) {
+        let configDetails = searchBotConfig
+        guard let retail_server_url = configDetails["retail_server_url"] as? String else{
+                  return
+        }
+        guard let indexName = configDetails["indexName"] as? String else{
+                  return
+        }
+        guard let namespace = configDetails["namespace"] as? String else{
+                  return
+        }
+        guard let stage = configDetails["stage"] as? String else{
+                  return
+        }
+        let urlString =  "\(retail_server_url)semanticSearch/v2/cx/processQuery"
+        let authorizationToken = "\(self.searchAccessTokenType) \(self.searchAccessToken)"
+        let headers: HTTPHeaders = [
+            "stage": stage,
+            "Authorization": authorizationToken
+        ]
+        let metaFilterKeys = ["gender","price","description"]
+        
+        let priceDic = ["operator":"arithmetic"]
+        let genderDic = ["operator":""]
+        let metaOptionsDic = ["price":priceDic, "gender":genderDic]
+        let metaOptions = NSMutableArray()
+        metaOptions.add(metaOptionsDic)
+        let parameters: [String: Any]  = ["sessionId": self.searchAccessToken, "indexName": indexName, "namespace": namespace, "metaFilterKeys" : metaFilterKeys, "metaOptions": metaOptions]
+        
+        let dataRequest = sessionManager.request(urlString, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+        dataRequest.validate().responseJSON { (response) in
+            if let _ = response.error {
+                let error: NSError = NSError(domain: "bot", code: 100, userInfo: [:])
+                failure?(error)
+                return
+            }
+            
+            if let dictionary = response.value as? [String: Any]{
+                    success?(dictionary)
+            } else {
+                let error: NSError = NSError(domain: "bot", code: 100, userInfo: [:])
+                    failure?(error)
+            }
+        }
+    }
+}

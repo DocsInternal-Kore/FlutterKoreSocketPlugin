@@ -70,15 +70,19 @@ import korebotplugin
                 guard let serachTxt = messageDetails?["searchQuery"] as? String else{
                     return
                 }
-                self.searchConnect.getSearchResults(serachTxt) { resultDic in
-                    // print(resultDic)
+
+                self.searchConnect.classifyQueryApi(serachTxt) { resultDic in
                     if self.flutterMethodChannel != nil{
                         //let jsonStr = self.convertJsonObjectFromString(object: resultDic)
                         self.flutterMethodChannel?.invokeMethod("Callbacks", arguments: resultDic)
                     }
-                } failure: { (error) in
+                } failure: { error in
                     print(error)
+                    let errorDic = ["error": "No Search can be performed on the query provided"]
+                    self.flutterMethodChannel?.invokeMethod("Callbacks", arguments: errorDic)
+                    
                 }
+
                 
             case "getHistoryResults":
                 guard let history = call.arguments else {
