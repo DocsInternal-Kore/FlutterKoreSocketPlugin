@@ -332,7 +332,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
         else hsh.put("query", query);
         hsh.put("sessionId", sharedPreferences.getString(RETAIL_JWT_TOKEN, SDKConfiguration.Client.bot_id));
         hsh.put("indexName", SDKConfiguration.Client.indexName);
-        hsh.put("namespace", SDKConfiguration.Client.indexName);
+        hsh.put("namespace", SDKConfiguration.Client.namespace);
         return hsh;
     }
 
@@ -340,7 +340,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
         HashMap<String, Object> hsh = new HashMap<>();
         hsh.put("sessionId", sharedPreferences.getString(RETAIL_JWT_TOKEN, SDKConfiguration.Client.bot_id));
         hsh.put("indexName", SDKConfiguration.Client.indexName);
-        hsh.put("namespace", SDKConfiguration.Client.indexName);
+        hsh.put("namespace", SDKConfiguration.Client.namespace);
         hsh.put("metaFilterKeys", SDKConfiguration.Client.metaFilterKeys);
         hsh.put("metaOptions", SDKConfiguration.getMetaOptions());
         return hsh;
