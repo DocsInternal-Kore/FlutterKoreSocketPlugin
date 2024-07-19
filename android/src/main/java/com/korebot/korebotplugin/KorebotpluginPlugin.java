@@ -22,6 +22,7 @@ import kore.botssdk.bot.BotClient;
 import kore.botssdk.event.KoreEventCenter;
 import kore.botssdk.models.CallBackEventModel;
 import kore.botssdk.models.JWTTokenResponse;
+import kore.botssdk.models.RetailTokenResponse;
 import kore.botssdk.net.BotJWTRestBuilder;
 import kore.botssdk.net.BotRestBuilder;
 import kore.botssdk.net.RestBuilder;
@@ -50,6 +51,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
     SharedPreferences sharedPreferences;
     String PREF_NAME = "Kore_Bot_Pref";
     String JWT_TOKEN = "JWT_TOKEN";
+    String RETAIL_JWT_TOKEN = "RETAIL_JWT_TOKEN";
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -99,23 +101,12 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                 break;
             case "initialize":
                 SDKConfiguration.Client.bot_id = call.argument("botId");
-                SDKConfiguration.Client.client_secret = call.argument("clientSecret");
-                SDKConfiguration.Client.client_id = call.argument("clientId");
-                SDKConfiguration.Client.bot_name = call.argument("chatBotName");
-                SDKConfiguration.Client.identity = call.argument("identity");
-                SDKConfiguration.Client.isReconnect = Boolean.TRUE.equals(call.argument("callHistory"));
+                SDKConfiguration.Client.indexName = call.argument("indexName");
+                SDKConfiguration.Client.namespace = call.argument("namespace");
+                SDKConfiguration.Server.RETAIL_SERVER_URL = call.argument("retail_server_url");
 
-                SDKConfiguration.Server.SERVER_URL = call.argument("server_url");
-                SDKConfiguration.Server.KORE_BOT_SERVER_URL = call.argument("server_url");
-                SDKConfiguration.setJwtServerUrl(call.argument("jwt_server_url"));
-
-                if (StringUtils.isNotEmpty(call.argument("jwtToken"))) {
-                    SDKConfiguration.JWTServer.setJwt_token(call.argument("jwtToken"));
-                    sharedPreferences.edit().putString(JWT_TOKEN, call.argument("jwtToken")).apply();
-                } else {
-                    //For jwtToken
-                    makeStsJwtCallWithConfig(false);
-                }
+                //For authorisation jwtToken
+                getSearchAuthorisationToken();
                 break;
             case "getSearchResults":
                 HashMap<String, Object> context_data = call.argument("context_data");
@@ -203,8 +194,56 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
         });
     }
 
+    private void getSearchAuthorisationToken() {
+        retrofit2.Call<RetailTokenResponse> getBankingConfigService = BotJWTRestBuilder.getRetailJWTRestAPI().getRetailJWTToken(SDKConfiguration.Client.stage, getAccessToken(SDKConfiguration.Client.bot_id));
+        getBankingConfigService.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull retrofit2.Call<RetailTokenResponse> call, @NonNull Response<RetailTokenResponse> response) {
+
+                if (response.isSuccessful()) {
+                    RetailTokenResponse jwtTokenResponse = response.body();
+                    if (jwtTokenResponse != null) {
+                        String jwt = jwtTokenResponse.getAccessToken();
+                        sharedPreferences.edit().putString(RETAIL_JWT_TOKEN, jwt).apply();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<RetailTokenResponse> call, @NonNull Throwable t) {
+                LogUtils.e("token refresh", t.getMessage());
+            }
+        });
+    }
+
     private void getSearchResults(String searchQuery) {
         retrofit2.Call<ResponseBody> getBankingConfigService = BotRestBuilder.getBotRestService().getAdvancedSearch(SDKConfiguration.Client.bot_id, sharedPreferences.getString(JWT_TOKEN, ""), getSearchObject(searchQuery));
+        getBankingConfigService.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(@NonNull retrofit2.Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+
+                if (response.isSuccessful()) {
+                    try {
+                        if (response.body() != null) channel.invokeMethod("Callbacks", new Gson().toJson(response.body().string()));
+                        else channel.invokeMethod("Callbacks", "No response received.");
+                    } catch (IOException e) {
+                        channel.invokeMethod("Callbacks", "No response received.");
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    channel.invokeMethod("Callbacks", "No response received.");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                LogUtils.d("token refresh", t.getMessage());
+            }
+        });
+    }
+
+    private void getProcessSearch(String sessionId) {
+        retrofit2.Call<ResponseBody> getBankingConfigService = BotRestBuilder.getBotRestService().getAdvancedSearch(SDKConfiguration.Client.bot_id, sharedPreferences.getString(JWT_TOKEN, ""), getSearchObject(sessionId));
         getBankingConfigService.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(@NonNull retrofit2.Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
@@ -296,11 +335,16 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
         hsh.put("query", query);
         return hsh;
     }
+    private HashMap<String, Object> getAccessToken(String botId) {
+        HashMap<String, Object> hsh = new HashMap<>();
+        hsh.put("botId", botId);
+        return hsh;
+    }
 
     private HashMap<String, Object> getSearchObject(String query, HashMap<String, Object> contextData) {
         HashMap<String, Object> hsh = new HashMap<>();
         hsh.put("query", query);
-        hsh.put("customData", contextData);
+//        hsh.put("customData", contextData);
         return hsh;
     }
 

@@ -35,6 +35,17 @@ public class BotJWTRestBuilder {
         }
         return botJWTRestAPI;
     }
+    public static BotJWTRestAPI getRetailJWTRestAPI() {
+        if (botJWTRestAPI == null) {
+            botJWTRestAPI = new Retrofit.Builder()
+                    .baseUrl(SDKConfiguration.Server.RETAIL_SERVER_URL)
+                    .addConverterFactory(createConverter())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .client(getClient())
+                    .build().create(BotJWTRestAPI.class);
+        }
+        return botJWTRestAPI;
+    }
 
     private static OkHttpClient getClient() {
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();

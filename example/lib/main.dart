@@ -64,6 +64,12 @@ class _MyHomePageState extends State<MyHomePage> {
     "jwtToken": "",
     "custom_data": {"age": 34, "gender": "M"}
   };
+  var searchConfig = {
+    "botId": "st-953e931b-1fe5-5bcc-9bb7-1b9bd4226947",
+    "indexName": "tedbaker-test",
+    "namespace": "tedbaker-gender-v1",
+    "retail_server_url": "https://retailassist-poc.kore.ai/"
+  };
 
   final myController = TextEditingController();
   final searchTxtfield = TextEditingController();
@@ -108,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     try {
       final String config =
-          await platform.invokeMethod('initialize', botConfig);
+          await platform.invokeMethod('initialize', searchConfig);
     } on PlatformException catch (e) {}
   }
 

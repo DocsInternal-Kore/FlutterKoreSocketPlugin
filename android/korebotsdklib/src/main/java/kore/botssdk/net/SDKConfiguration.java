@@ -82,6 +82,7 @@ public class SDKConfiguration {
         public static final String TTS_WS_URL = "wss://speech.kore.ai/tts/ws";
         public static final boolean IS_ANONYMOUS_USER = false;
         public static String SERVER_URL = "https://bots.kore.ai/"; // "https://demo.kore.net";
+        public static String RETAIL_SERVER_URL = "https://bots.kore.ai/"; // "https://demo.kore.net";
         public static final String Branding_SERVER_URL = "https://bots.kore.ai/";
         public static final String koreAPIUrl = "https://sit-bots.kore.ai/";
         public static RestResponse.BotCustomData customData = new RestResponse.BotCustomData();
@@ -97,6 +98,8 @@ public class SDKConfiguration {
         public static String identity = "";
         public static String bot_name = "";
         public static String bot_id = "";
+        public static String indexName = "";
+        public static String namespace = "";
         public static final String tenant_id = "605da1dbb5f6f00badadb665";
         public static final boolean enablePanel = false;
         public static boolean isReconnect = false;
@@ -111,6 +114,7 @@ public class SDKConfiguration {
         // for webhook based communication use following option
         public static String webhookURL = "https://qa1-bots.kore.ai/chatbot/v2/webhook/st-ea1b128f-7895-581a-8c87-bbfe3b9f1ff1";
         public static int apiVersion = 2;
+        public static String stage = "uat";
         //webhookURL:'https://qa-bots.kore.ai/chatbot/v2/webhook/st-5840c71a-ec0b-516e-8d9a-f9e608ea8c4b',
         //webhookURL:'https://qa-bots.kore.ai/chatbot/hooks/st-5840c71a-ec0b-516e-8d9a-f9e608ea8c4b/hookInstance/ivrInst-62c362b9-5f88-5ec5-9f3f-7c0eb9801e70'
         //webhookURL:'https://qa-bots.kore.ai/chatbot/v2/webhook/st-5840c71a-ec0b-516e-8d9a-f9e608ea8c4b/hookInstance/ivrInst-62c362b9-5f88-5ec5-9f3f-7c0eb9801e70'
