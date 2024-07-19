@@ -35,8 +35,18 @@ var botConfig = {
         "https://mk2r2rmj21.execute-api.us-east-1.amazonaws.com/dev/",
     "server_url": "https://platform.kore.ai",
     "isReconnect": false,
-    "jwtToken": ""
+    "jwtToken": "",
+    "custom_data": {"age": 34, "gender": "M"}
   };
+
+var searchConfig = {
+    "botId": "st-953e931b-1fe5-5bcc-9bb7-1b9bd4226947",
+    "indexName": "tedbaker-test",
+    "namespace": "tedbaker-gender-v1",
+    "stage": "dev",
+    "retail_server_url": "https://retailassist-poc.kore.ai/"
+  };
+
 ```
 
 3) Below is the method to be called from the parent application before connecting to the bot. Which intializes the SDK
@@ -51,7 +61,7 @@ Future<void> botInitialize() async {
 
     try {
       final String config =
-          await platform.invokeMethod('initialize', botConfig);
+          await platform.invokeMethod('initialize', searchConfig);
     } on PlatformException catch (e) {}
   }
 ```
@@ -94,20 +104,22 @@ platform.setMethodCallHandler((handler) async {
 
 ```
 
-7) When user wants to send any message to bot below method can be used.
+7) When user wants to send any message to bot below method can be used. We can add context data as well in this method as key, value pair
 ```
 “_callSendmethod” can be changed as per requirement.
 Future<void> _callSendmethod(msg) async {
     platform.setMethodCallHandler((handler) async {
       if (handler.method == 'Callbacks') {
         // Do your logic here.
-        debugPrint("Bot response from native ${handler.arguments}");
+        debugPrint("Event from native ${handler.arguments}");
       }
     });
 
     try {
-      final String result =
-          await platform.invokeMethod('sendMessage', {"message": msg});
+      final String result = await platform.invokeMethod('sendMessage', {
+        "message": msg,
+        "msg_data": {"size": 40, "gender": "M"}
+      });
     } on PlatformException catch (e) {}
   }
 
@@ -120,7 +132,7 @@ if (handler.method == 'Callbacks') {
       }
 ```
 
-10) Below method can be used for getting search results
+10) Below method can be used for getting search results with context data(Optional)
 ```
 Future<void> getSearchResults(searchQuery) async {
     platform.setMethodCallHandler((handler) async {
@@ -131,8 +143,10 @@ Future<void> getSearchResults(searchQuery) async {
     });
 
     try {
-      final String config = await platform
-          .invokeMethod('getSearchResults', {"searchQuery": searchQuery});
+      final String config = await platform.invokeMethod('getSearchResults', {
+        "searchQuery": searchQuery,
+        "context_data": {"color": "Black", "gender": "M"}
+      });
     } on PlatformException catch (e) {}
   }
 
