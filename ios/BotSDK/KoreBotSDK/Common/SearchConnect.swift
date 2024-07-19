@@ -60,9 +60,8 @@ public class SearchConnect: NSObject {
         guard let isReconnect = configDetails?["isReconnect"] as? Bool else{
             return
         }
-        guard let custom_data = configDetails?["custom_data"] as? [String: Any] else{
-            return
-        }
+       let custom_data = configDetails?["custom_data"] as? [String: Any]
+        
         SDKConfiguration.botConfig.clientId = clientId
         SDKConfiguration.botConfig.clientSecret = clientSecret
         SDKConfiguration.botConfig.botId = botId
@@ -73,7 +72,7 @@ public class SearchConnect: NSObject {
         SDKConfiguration.serverConfig.JWT_SERVER = jwtServerUrl
         SDKConfiguration.serverConfig.BOT_SERVER = botServerUrl
         SDKConfiguration.botConfig.isReconnect =  isReconnect
-        SDKConfiguration.botConfig.customData = custom_data
+        SDKConfiguration.botConfig.customData = custom_data ?? [:]
         
         kaBotClient.connect(block: { [weak self] (client) in
             print("Sucess")
@@ -132,10 +131,8 @@ public class SearchConnect: NSObject {
         guard let isReconnect = configDetails?["isReconnect"] as? Bool else{
             return
         }
-        guard let custom_data = configDetails?["custom_data"] as? [String: Any] else{
-            return
-        }
-        SDKConfiguration.botConfig.customData = custom_data
+        let custom_data = configDetails?["custom_data"] as? [String: Any]
+        SDKConfiguration.botConfig.customData = custom_data ?? [:]
         
         let isAnonymous: Bool = false
         
