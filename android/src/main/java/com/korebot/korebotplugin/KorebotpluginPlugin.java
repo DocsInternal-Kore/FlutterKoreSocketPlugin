@@ -2,7 +2,6 @@ package com.korebot.korebotplugin;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -24,7 +23,6 @@ import kore.botssdk.models.CallBackEventModel;
 import kore.botssdk.models.JWTTokenResponse;
 import kore.botssdk.models.RetailTokenResponse;
 import kore.botssdk.net.BotJWTRestBuilder;
-import kore.botssdk.net.BotRestBuilder;
 import kore.botssdk.net.RestBuilder;
 import kore.botssdk.net.RestResponse;
 import kore.botssdk.net.SDKConfiguration;
@@ -78,7 +76,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                 if (StringUtils.isNotEmpty(call.argument("jwtToken"))) {
                     SDKConfiguration.JWTServer.setJwt_token(call.argument("jwtToken"));
                     sharedPreferences.edit().putString(JWT_TOKEN, call.argument("jwtToken")).apply();
-                } else if (StringUtils.isEmpty(sharedPreferences.getString(JWT_TOKEN, ""))) makeStsJwtCallWithConfig(true);
+                } else if (StringUtils.isEmpty(sharedPreferences.getString(JWT_TOKEN, ""))) makeStsJwtCallWithConfig();
 
                 HashMap<String, Object> data = call.argument("custom_data");
                 if (data != null) {
@@ -87,6 +85,8 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                     SDKConfiguration.Server.setCustomData(customData);
                     botClient = new BotClient(context, customData);
                 }
+                else
+                    botClient = new BotClient(context);
 
                 //Initiating bot connection once connected callbacks will be fired on respective actions
                 botClient.connectAsAnonymousUser(sharedPreferences.getString(JWT_TOKEN, ""), SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
@@ -113,8 +113,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                 HashMap<String, Object> context_data = call.argument("context_data");
                 if (context_data != null) {
                     getSearchResults(call.argument("searchQuery"), context_data);
-                } else
-                    getSearchResults(call.argument("searchQuery"));
+                } else getSearchResults(call.argument("searchQuery"));
                 break;
             case "getHistoryResults":
                 getHistoryResults(call.argument("offset"), call.argument("limit"));
@@ -130,13 +129,11 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
         @Override
         public void onOpen(boolean b) {
             channel.invokeMethod("Callbacks", "Bot Connected Successfully");
-            Toast.makeText(context, "Bot Connected Successfully", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void onClose(int i, String s) {
             channel.invokeMethod("Callbacks", "Bot disconnected Successfully");
-            Toast.makeText(context, "Bot disconnected Successfully", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -162,13 +159,12 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
         @Override
         public void onReconnectStopped(String reconnectionStopped) {
             channel.invokeMethod("Callbacks", "Unable to connect to the bot. Please try again later");
-            Toast.makeText(context, "Unable to connect to the bot. Please try again later", Toast.LENGTH_SHORT).show();
         }
     };
 
-    private void makeStsJwtCallWithConfig(boolean callBotConnect) {
+    private void makeStsJwtCallWithConfig() {
         retrofit2.Call<JWTTokenResponse> getBankingConfigService = BotJWTRestBuilder.getBotJWTRestAPI().getJWTToken(getRequestObject());
-        getBankingConfigService.enqueue(new Callback<JWTTokenResponse>() {
+        getBankingConfigService.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull retrofit2.Call<JWTTokenResponse> call, @NonNull Response<JWTTokenResponse> response) {
 
@@ -178,19 +174,20 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                         String jwt = jwtTokenResponse.getJwt();
                         sharedPreferences.edit().putString(JWT_TOKEN, jwt).apply();
 
-                        if (callBotConnect) {
-                            botClient = new BotClient(context);
+                        botClient = new BotClient(context);
 
-                            //Initiating bot connection once connected callbacks will be fired on respective actions
-                            botClient.connectAsAnonymousUser(sharedPreferences.getString(JWT_TOKEN, ""), SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
-                        }
-                    }
+                        //Initiating bot connection once connected callbacks will be fired on respective actions
+                        botClient.connectAsAnonymousUser(sharedPreferences.getString(JWT_TOKEN, ""), SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
+                    } else channel.invokeMethod("Callbacks", "Unable to connect to the bot. Please try again later");
+                } else {
+                    channel.invokeMethod("Callbacks", "Unable to connect to the bot. Please try again later");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<JWTTokenResponse> call, @NonNull Throwable t) {
                 LogUtils.e("token refresh", t.getMessage());
+                channel.invokeMethod("Callbacks", "Unable to connect to the bot. Please try again later");
             }
         });
     }
@@ -206,45 +203,24 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                     if (jwtTokenResponse != null) {
                         String jwt = jwtTokenResponse.getAccessToken();
                         sharedPreferences.edit().putString(RETAIL_JWT_TOKEN, jwt).apply();
+                    } else {
+                        channel.invokeMethod("Callbacks", "No Search can be performed on the query provided.");
                     }
+                } else {
+                    channel.invokeMethod("Callbacks", "No Search can be performed on the query provided.");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<RetailTokenResponse> call, @NonNull Throwable t) {
                 LogUtils.e("token refresh", t.getMessage());
+                channel.invokeMethod("Callbacks", "No Search can be performed on the query provided.");
             }
         });
     }
 
     private void getSearchResults(String searchQuery) {
-        retrofit2.Call<ResponseBody> getBankingConfigService = BotRestBuilder.getBotRestService().getAdvancedSearch(SDKConfiguration.Client.bot_id, sharedPreferences.getString(JWT_TOKEN, ""), getSearchObject(searchQuery));
-        getBankingConfigService.enqueue(new Callback<>() {
-            @Override
-            public void onResponse(@NonNull retrofit2.Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
-
-                if (response.isSuccessful()) {
-                    try {
-                        if (response.body() != null) channel.invokeMethod("Callbacks", new Gson().toJson(response.body().string()));
-                        else channel.invokeMethod("Callbacks", "No response received.");
-                    } catch (IOException e) {
-                        channel.invokeMethod("Callbacks", "No response received.");
-                        throw new RuntimeException(e);
-                    }
-                } else {
-                    channel.invokeMethod("Callbacks", "No response received.");
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                LogUtils.d("token refresh", t.getMessage());
-            }
-        });
-    }
-
-    private void getSearchResults(String searchQuery, HashMap<String, Object> contextData) {
-        retrofit2.Call<ResponseBody> getBankingConfigService = BotJWTRestBuilder.getRetailJWTRestAPI().getSearchClassify(SDKConfiguration.Client.stage, "Bearer "+sharedPreferences.getString(RETAIL_JWT_TOKEN, ""), getClassifyObject(searchQuery, contextData));
+        retrofit2.Call<ResponseBody> getBankingConfigService = BotJWTRestBuilder.getRetailJWTRestAPI().getSearchClassify(SDKConfiguration.Client.stage, "Bearer " + sharedPreferences.getString(RETAIL_JWT_TOKEN, ""), getClassifyObject(searchQuery, null));
         getBankingConfigService.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull retrofit2.Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
@@ -262,8 +238,29 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
             }
         });
     }
+
+    private void getSearchResults(String searchQuery, HashMap<String, Object> contextData) {
+        retrofit2.Call<ResponseBody> getBankingConfigService = BotJWTRestBuilder.getRetailJWTRestAPI().getSearchClassify(SDKConfiguration.Client.stage, "Bearer " + sharedPreferences.getString(RETAIL_JWT_TOKEN, ""), getClassifyObject(searchQuery, contextData));
+        getBankingConfigService.enqueue(new Callback<>() {
+            @Override
+            public void onResponse(@NonNull retrofit2.Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+
+                if (response.isSuccessful() && response.body() != null) {
+                    getProcessResults();
+                } else {
+                    channel.invokeMethod("Callbacks", "No Search can be performed on the query provided.");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                channel.invokeMethod("Callbacks", "No Search can be performed on the query provided.");
+            }
+        });
+    }
+
     void getProcessResults() {
-        retrofit2.Call<ResponseBody> getBankingConfigService = BotJWTRestBuilder.getRetailJWTRestAPI().getProcessSearch(SDKConfiguration.Client.stage, "Bearer "+sharedPreferences.getString(RETAIL_JWT_TOKEN, ""), getProcessObject());
+        retrofit2.Call<ResponseBody> getBankingConfigService = BotJWTRestBuilder.getRetailJWTRestAPI().getProcessSearch(SDKConfiguration.Client.stage, "Bearer " + sharedPreferences.getString(RETAIL_JWT_TOKEN, ""), getProcessObject());
         getBankingConfigService.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull retrofit2.Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
@@ -323,11 +320,6 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
         return hsh;
     }
 
-    private HashMap<String, Object> getSearchObject(String query) {
-        HashMap<String, Object> hsh = new HashMap<>();
-        hsh.put("query", query);
-        return hsh;
-    }
     private HashMap<String, Object> getAccessToken(String botId) {
         HashMap<String, Object> hsh = new HashMap<>();
         hsh.put("botId", botId);
@@ -336,12 +328,14 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
     private HashMap<String, Object> getClassifyObject(String query, HashMap<String, Object> contextData) {
         HashMap<String, Object> hsh = new HashMap<>();
-        hsh.put("query", SDKConfiguration.getQuery(query, contextData));
+        if (contextData != null) hsh.put("query", SDKConfiguration.getQuery(query, contextData));
+        else hsh.put("query", query);
         hsh.put("sessionId", sharedPreferences.getString(RETAIL_JWT_TOKEN, SDKConfiguration.Client.bot_id));
         hsh.put("indexName", SDKConfiguration.Client.indexName);
         hsh.put("namespace", SDKConfiguration.Client.indexName);
         return hsh;
     }
+
     private HashMap<String, Object> getProcessObject() {
         HashMap<String, Object> hsh = new HashMap<>();
         hsh.put("sessionId", sharedPreferences.getString(RETAIL_JWT_TOKEN, SDKConfiguration.Client.bot_id));
