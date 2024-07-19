@@ -260,7 +260,7 @@ extension SearchConnect{
         
     }
     
-    public func classifyQueryApi(_ text: String!, success:((_ dictionary: [String: Any]) -> Void)?, failure:((_ error: Error) -> Void)?) {
+    public func classifyQueryApi(_ text: String!,_ context_data_String: String!, success:((_ dictionary: [String: Any]) -> Void)?, failure:((_ error: Error) -> Void)?) {
         let configDetails = searchBotConfig
         guard let retail_server_url = configDetails["retail_server_url"] as? String else{
                   return
@@ -280,7 +280,7 @@ extension SearchConnect{
             "stage": stage,
             "Authorization": authorizationToken
         ]
-        let parameters: [String: Any]  = ["query": text ?? "", "sessionId": self.searchAccessToken, "indexName": indexName, "namespace": namespace]
+        let parameters: [String: Any]  = ["query": "\(text ?? "")\(context_data_String ?? "")", "sessionId": self.searchAccessToken, "indexName": indexName, "namespace": namespace]
         
         let dataRequest = sessionManager.request(urlString, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
         dataRequest.validate().responseJSON { (response) in

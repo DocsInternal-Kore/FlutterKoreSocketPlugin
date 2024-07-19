@@ -74,8 +74,14 @@ import korebotplugin
                 guard let serachTxt = messageDetails?["searchQuery"] as? String else{
                     return
                 }
-
-                self.searchConnect.classifyQueryApi(serachTxt) { resultDic in
+                let context_data = messageDetails?["context_data"] as? [String:Any]
+                var context_data_String = ""
+                for (key, value) in context_data ?? [:] {
+                    //print("\(key) -> \(value)")
+                    context_data_String.append(" \(key):\(value)")
+                }
+                //print(context_data_String)
+                self.searchConnect.classifyQueryApi(serachTxt,context_data_String) { resultDic in
                     if self.flutterMethodChannel != nil{
                         //let jsonStr = self.convertJsonObjectFromString(object: resultDic)
                         self.flutterMethodChannel?.invokeMethod("Callbacks", arguments: resultDic)
