@@ -21,6 +21,8 @@ public class BotJWTRestBuilder {
 
     private static BotJWTRestAPI botJWTRestAPI;
 
+    private static BotJWTRestAPI retailsJWTRestAPI;
+
     private BotJWTRestBuilder() {
     }
 
@@ -36,15 +38,15 @@ public class BotJWTRestBuilder {
         return botJWTRestAPI;
     }
     public static BotJWTRestAPI getRetailJWTRestAPI() {
-        if (botJWTRestAPI == null) {
-            botJWTRestAPI = new Retrofit.Builder()
+        if (retailsJWTRestAPI == null) {
+            retailsJWTRestAPI = new Retrofit.Builder()
                     .baseUrl(SDKConfiguration.Server.RETAIL_SERVER_URL)
                     .addConverterFactory(createConverter())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .client(getClient())
                     .build().create(BotJWTRestAPI.class);
         }
-        return botJWTRestAPI;
+        return retailsJWTRestAPI;
     }
 
     private static OkHttpClient getClient() {

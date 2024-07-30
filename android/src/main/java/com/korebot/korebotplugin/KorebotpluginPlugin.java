@@ -177,7 +177,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                         botClient = new BotClient(context);
 
                         //Initiating bot connection once connected callbacks will be fired on respective actions
-                        botClient.connectAsAnonymousUser(sharedPreferences.getString(JWT_TOKEN, ""), SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
+                        botClient.connectAsAnonymousUser(jwt, SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
                     } else channel.invokeMethod("Callbacks", "Unable to connect to the bot. Please try again later");
                 } else {
                     channel.invokeMethod("Callbacks", "Unable to connect to the bot. Please try again later");
