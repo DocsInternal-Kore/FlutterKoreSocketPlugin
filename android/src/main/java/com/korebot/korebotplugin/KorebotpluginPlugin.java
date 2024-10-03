@@ -76,7 +76,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                 if (StringUtils.isNotEmpty(call.argument("jwtToken"))) {
                     SDKConfiguration.JWTServer.setJwt_token(call.argument("jwtToken"));
                     sharedPreferences.edit().putString(JWT_TOKEN, call.argument("jwtToken")).apply();
-                } else if (StringUtils.isEmpty(sharedPreferences.getString(JWT_TOKEN, ""))) makeStsJwtCallWithConfig();
+                } else makeStsJwtCallWithConfig();
 
                 HashMap<String, Object> data = call.argument("custom_data");
                 if (data != null) {
@@ -84,9 +84,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                     customData.putAll(data);
                     SDKConfiguration.Server.setCustomData(customData);
                     botClient = new BotClient(context, customData);
-                }
-                else
-                    botClient = new BotClient(context);
+                } else botClient = new BotClient(context);
 
                 //Initiating bot connection once connected callbacks will be fired on respective actions
                 botClient.connectAsAnonymousUser(sharedPreferences.getString(JWT_TOKEN, ""), SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
