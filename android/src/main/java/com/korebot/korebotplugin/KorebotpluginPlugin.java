@@ -71,6 +71,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                 SDKConfiguration.Client.identity = call.argument("identity");
                 SDKConfiguration.Client.isReconnect = Boolean.TRUE.equals(call.argument("isReconnect"));
                 SDKConfiguration.Server.SERVER_URL = call.argument("server_url");
+                SDKConfiguration.Server.KORE_BOT_SERVER_URL = call.argument("server_url");
                 SDKConfiguration.setJwtServerUrl(call.argument("jwt_server_url"));
 
                 if (StringUtils.isNotEmpty(call.argument("jwtToken"))) {
