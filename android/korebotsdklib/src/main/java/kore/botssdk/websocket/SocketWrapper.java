@@ -159,13 +159,19 @@ public final class SocketWrapper {
                     if (botAuthorizationResponse.body() != null) {
                         botUserId = botAuthorizationResponse.body().getUserInfo().getUserId();
                         auth = botAuthorizationResponse.body().getAuthorization().getAccessToken();
+
+                        Call<RestResponse.RTMUrl> rtmUrlCall = BotRestBuilder.getBotRestService().getRtmUrl("bearer " + botAuthorizationResponse.body().getAuthorization().getAccessToken(), hsh1);
+                        Response<RestResponse.RTMUrl> rtmUrlResponse = rtmUrlCall.execute();
+
+                        if (rtmUrlResponse.body() != null) {
+                            observableEmitter.onNext(rtmUrlResponse.body());
+                            observableEmitter.onComplete();
+                        } else {
+                            KoreEventCenter.post(new CallBackEventModel("Error_RTMStart", "RTM start call failed"));
+                        }
+                    } else {
+                        KoreEventCenter.post(new CallBackEventModel("Error_JwtGrant", "JwtGrant call failed"));
                     }
-
-                    Call<RestResponse.RTMUrl> rtmUrlCall = BotRestBuilder.getBotRestService().getRtmUrl("bearer " + botAuthorizationResponse.body().getAuthorization().getAccessToken(), hsh1);
-                    Response<RestResponse.RTMUrl> rtmUrlResponse = rtmUrlCall.execute();
-
-                    observableEmitter.onNext(rtmUrlResponse.body());
-                    observableEmitter.onComplete();
                 } catch (Exception e) {
                     observableEmitter.onError(e);
                 }
@@ -426,16 +432,23 @@ public final class SocketWrapper {
                     HashMap<String, Object> hsh1 = new HashMap<>();
                     hsh1.put(Constants.BOT_INFO, botInfoModel);
 
-                    if(botAuthorizationResponse.body() != null) {
+                    if (botAuthorizationResponse.body() != null) {
                         auth = botAuthorizationResponse.body().getAuthorization().getAccessToken();
                         botUserId = botAuthorizationResponse.body().getUserInfo().getUserId();
+
+                        Call<RestResponse.RTMUrl> rtmUrlCall = BotRestBuilder.getBotRestService().getRtmUrl("bearer " + botAuthorizationResponse.body().getAuthorization().getAccessToken(), hsh1, true);
+                        Response<RestResponse.RTMUrl> rtmUrlResponse = rtmUrlCall.execute();
+
+                        if (rtmUrlResponse.body() != null) {
+                            observableEmitter.onNext(rtmUrlResponse.body());
+                            observableEmitter.onComplete();
+                        } else {
+                            KoreEventCenter.post(new CallBackEventModel("Error_RTMStart", "RTM start call failed"));
+                        }
+                    } else {
+                        KoreEventCenter.post(new CallBackEventModel("Error_JwtGrant", "JwtGrant call failed"));
                     }
 
-                    Call<RestResponse.RTMUrl> rtmUrlCall = BotRestBuilder.getBotRestService().getRtmUrl("bearer " + botAuthorizationResponse.body().getAuthorization().getAccessToken(), hsh1, true);
-                    Response<RestResponse.RTMUrl> rtmUrlResponse = rtmUrlCall.execute();
-
-                    observableEmitter.onNext(rtmUrlResponse.body());
-                    observableEmitter.onComplete();
                 } catch (Exception e) {
                     observableEmitter.onError(e);
                 }
@@ -467,6 +480,8 @@ public final class SocketWrapper {
 
             @Override
             public void onError(Throwable throwable) {
+                mIsReconnectionAttemptNeeded = true;
+                reconnectAttempt();
             }
 
             @Override
@@ -528,7 +543,6 @@ public final class SocketWrapper {
                 LogUtils.d(LOG_TAG, ":: The Exception is " + e);
             }
         } else {
-            Log.d(LOG_TAG, "Max attempts reached, Reconnection Stopped");
             socketConnectionListener.onReconnectStopped("Reconnection Stopped");
         }
     }
@@ -538,10 +552,10 @@ public final class SocketWrapper {
      * @return
      */
     int getReconnectDelay() {
-        if (isOnline()) {
-            mReconnectionCount++;
-            LogUtils.d(LOG_TAG, "Reconnection count " + mReconnectionCount);
-        }
+//        if (isOnline()) {
+        mReconnectionCount++;
+        LogUtils.d(LOG_TAG, "Reconnection count " + mReconnectionCount);
+//        }
 
         return 5 * 1000;
     }

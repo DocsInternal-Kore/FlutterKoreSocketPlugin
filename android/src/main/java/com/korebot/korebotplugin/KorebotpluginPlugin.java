@@ -156,7 +156,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
         @Override
         public void onClose(int i, String s) {
-            channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("BotClosed", "Bot disconnected Successfully")));
+            channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("BotDisconnected", "Bot disconnected")));
         }
 
         @Override
@@ -181,7 +181,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
         @Override
         public void onReconnectStopped(String reconnectionStopped) {
-            channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("Error_Socket", "Max attempts reached, Reconnection Stopped")));
+            channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("Error_Socket", "Unable to connect. Please try again later")));
         }
     };
 
