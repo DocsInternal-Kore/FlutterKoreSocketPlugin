@@ -387,4 +387,9 @@ let searchConnect = SearchConnect()
 ```
 { "eventCode" : "Send_Failed", "eventMessage" : "Socket disconnected, Trying to reconnect" }
 ```
+
+8) When isSocketConnected method called sending this callback
+```
+{ "eventCode" : "BotConnectStatus", "eventMessage" : "true/false" }
+```
   
