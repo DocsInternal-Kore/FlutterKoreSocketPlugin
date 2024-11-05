@@ -104,7 +104,9 @@ platform.setMethodCallHandler((handler) async {
 
 ```
 
-7) When user wants to send any message to bot below method can be used. We can add context data as well in this method as key, value pair
+7) When user wants to send any message to bot below method can be used. We can add context data as well in this method as key, value pair.
+   This method verifies the bot connection is active or not, If active sends the message if not sends a call back to prarent app and tries to reconnect the bot connection
+   and sends the message to bot.
 ```
 “_callSendmethod” can be changed as per requirement.
 Future<void> _callSendmethod(msg) async {
@@ -186,6 +188,28 @@ Future<void> closeBot() async {
     } on PlatformException catch (e) {}
   }
 ```
+
+13) Below is the method can be used to verify the bot connection active or inactive.
+```
+Future<void> isSocketConnected() async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'Callbacks') {
+        // Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
+
+    try {
+      final String socketConnection =
+          await platform.invokeMethod('isSocketConnected');
+    } on PlatformException catch (e) {}
+  }
+
+CallBack Event : {"eventCode":"BotConnectStatus","eventMessage":"true/false"}
+```
+
+
+
 
 
 # For iOS:
@@ -325,4 +349,35 @@ let searchConnect = SearchConnect()
 
 ```
 
+# Error CallBacks
+
+1) When fails in fetching jwt token
+```
+{ "eventCode" : "Error_STS", "eventMessage" : "STS call failed" }
+```
+
+2) When fails in jwt grant call
+```
+{ "eventCode" : "Error_JwtGrant", "eventMessage" : "JwtGrant call failed" }
+```
+
+3) When fails in RTM start call
+```
+{ "eventCode" : "Error_RTMStart", "eventMessage" : "RTM start call failed" }
+```
+
+4) When Socket connection to Bot failed
+```
+{ "eventCode" : "Error_Socket", "eventMessage" : "Unable to connect. Please try again later" }
+```
+
+5) When Socket connected successfully
+```
+{ "eventCode " : "BotConnected" , "eventMessage" : "Bot connected successfully" }
+```
+
+6) When Socket disconnected by user or network disconnection
+```
+{ "eventCode" : "BotDisconnected", "eventMessage" : "Bot disconnected" }
+```
   
