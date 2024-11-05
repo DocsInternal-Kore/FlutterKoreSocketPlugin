@@ -81,7 +81,6 @@ public class KoreBotConnect: NSObject {
             self.searchConnect.closeBot()
             
         case "isSocketConnected":
-            print("isSocketConnected")
             let dic = ["event_code": "BotConnectStatus", "event_message": botConnectStatus] as [String : Any]
             let jsonString = Utilities.stringFromJSONObject(object: dic)
             NotificationCenter.default.post(name: Notification.Name(callbacksNotification), object: jsonString)

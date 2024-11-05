@@ -5,6 +5,7 @@
 //  Created by Pagidimarri Kartheek on 23/07/24.
 //
 
+
 import UIKit
 public class KoreBotSdk: NSObject {
     
@@ -84,14 +85,18 @@ public class KoreBotSdk: NSObject {
         case "closeBot":
             // MARK: Close the bot
             self.searchConnect.closeBot()
+            
+        case "isSocketConnected":
+            let dic = ["event_code": "BotConnectStatus", "event_message": botConnectStatus] as [String : Any]
+            let jsonString = Utilities.stringFromJSONObject(object: dic)
+            NotificationCenter.default.post(name: Notification.Name(callbacksNotification), object: jsonString)
         default:
             break
         }
     }
     
     @objc func tokenExpiry(notification:Notification){
-        let dic = ["event_code": "SESSION_EXPIRED", "event_message": "Your session has been expired. Please re-login."]
-        let jsonString = Utilities.stringFromJSONObject(object: dic)
+        let jsonString: String = notification.object as! String
         NotificationCenter.default.post(name: Notification.Name(callbacksNotification), object: jsonString)
     }
 

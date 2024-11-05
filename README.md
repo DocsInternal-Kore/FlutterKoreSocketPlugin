@@ -320,6 +320,9 @@ let searchConnect = SearchConnect()
             case "closeBot":
                 // MARK: Close the bot
                 self.searchConnect.closeBot()
+                
+            case "isSocketConnected":
+                self.searchConnect.connectBotConnectStatus()
             default:
                 break
             }
@@ -342,8 +345,7 @@ let searchConnect = SearchConnect()
     }
     
     @objc func tokenExpiry(notification:Notification){
-        let dic = ["event_code": "SESSION_EXPIRED", "event_message": "Your session has been expired. Please re-login."]
-        let jsonString = Utilities.stringFromJSONObject(object: dic)
+        let jsonString: String = notification.object as! String
         NotificationCenter.default.post(name: Notification.Name("CallbacksNotification"), object: jsonString)
     }
 

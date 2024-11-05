@@ -110,7 +110,7 @@ open class KABotClient: NSObject {
                         if weakSelf.retryCount <= 4{
                             self?.tryConnect()
                         }else{
-                            let dic = ["event_code": "Error_Socket", "event_message": "Max attempts reached, Reconnection Stopped"]
+                            let dic = ["event_code": "Error_Socket", "event_message": "Unable to connect. Please try again later"]
                             let jsonString = Utilities.stringFromJSONObject(object: dic)
                             NotificationCenter.default.post(name: Notification.Name(tokenExipryNotification), object: jsonString)
                         }
@@ -217,6 +217,10 @@ open class KABotClient: NSObject {
     
     func deConfigureBotClient() {
         // events
+        let dic = ["event_code": "BotDisconnected", "event_message": "Bot disconnected"]
+        let jsonString = Utilities.stringFromJSONObject(object: dic)
+        NotificationCenter.default.post(name: Notification.Name(tokenExipryNotification), object: jsonString)
+        
         botClient.disconnect()
         botClient.connectionWillOpen = nil
         botClient.connectionDidOpen = nil
