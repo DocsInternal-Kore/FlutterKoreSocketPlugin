@@ -213,6 +213,12 @@ public class SearchConnect: NSObject {
     public func closeBot(){
         KABotClient.shared.deConfigureBotClient()
     }
+    
+    public func connectBotConnectStatus(){
+        let dic = ["event_code": "BotConnectStatus", "event_message": botConnectStatus] as [String : Any]
+        let jsonString = Utilities.stringFromJSONObject(object: dic)
+        NotificationCenter.default.post(name: Notification.Name(callbacksNotification), object: jsonString)
+    }
 
 }
 

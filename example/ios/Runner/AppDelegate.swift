@@ -109,6 +109,9 @@ import korebotplugin
             case "closeBot":
                 // MARK: Close the bot
                 self.searchConnect.closeBot()
+                
+            case "isSocketConnected":
+                self.searchConnect.connectBotConnectStatus()
             default:
                 break
             }
@@ -130,9 +133,54 @@ import korebotplugin
     }
     
     @objc func tokenExpiry(notification:Notification){
-        let dic = ["event_code": "SESSION_EXPIRED", "event_message": "Your session has been expired. Please re-login."]
-        let jsonString = Utilities.stringFromJSONObject(object: dic)
+        let jsonString: String = notification.object as! String
         NotificationCenter.default.post(name: Notification.Name("CallbacksNotification"), object: jsonString)
     }
 
 }
+
+
+//import UIKit
+//import Flutter
+//import korebotplugin
+//
+//@UIApplicationMain
+//@objc class AppDelegate: FlutterAppDelegate {
+//    
+//    var flutterMethodChannel: FlutterMethodChannel? = nil
+//    
+//    let koreBotConnect = KoreBotConnect()
+//    
+//    override func application(
+//        _ application: UIApplication,
+//        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+//    ) -> Bool {
+//        
+//        NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "CallbacksNotification"), object: nil)
+//        
+//        NotificationCenter.default.addObserver(self, selector: #selector(self.callbacksMethod), name: NSNotification.Name(rawValue: "CallbacksNotification"), object: nil)
+//        
+//        let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
+//        flutterMethodChannel = FlutterMethodChannel(name: "kore.botsdk/chatbot",
+//                                                    binaryMessenger: controller.binaryMessenger)
+//        flutterMethodChannel?.setMethodCallHandler({
+//            (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+//            // This method is invoked on the UI thread.
+//            self.koreBotConnect.connect(methodName: call.method, callArguments: (call.arguments as? [String: Any]) ?? [:])
+//        })
+//        
+//        GeneratedPluginRegistrant.register(with: self)
+//        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+//    }
+//    
+//    // MARK: Callbacks From Native to flutter
+//    @objc func callbacksMethod(notification:Notification) {
+//        let dataString: String = notification.object as! String
+//        if let eventDic = Utilities.jsonObjectFromString(jsonString: dataString){
+//            if flutterMethodChannel != nil{
+//                flutterMethodChannel?.invokeMethod("Callbacks", arguments: eventDic)
+//            }
+//        }
+//    }
+//   
+//}

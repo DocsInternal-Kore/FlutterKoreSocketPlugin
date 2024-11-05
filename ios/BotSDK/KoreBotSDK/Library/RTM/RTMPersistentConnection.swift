@@ -76,17 +76,18 @@ open class RTMTimer: NSObject {
 
 open class RTMPersistentConnection : NSObject, WebSocketDelegate {
     public func didReceive(event: Starscream.WebSocketEvent, client: Starscream.WebSocketClient) {
-        
         switch event {
         case .connected(let headers):
             connectionDelegate?.rtmConnectionDidOpen()
             isConnected = true
             isConnecting = false
+            botConnectStatus = true
             print("websocket is connected: \(headers)")
         case .disconnected(let reason, let code):
             connectionDelegate?.rtmConnectionDidClose(code, reason: reason)
             isConnected = false
             isConnecting = false
+            botConnectStatus = false
             print("websocket is disconnected: \(reason) with code: \(code)")
         case .text(let message):
             //print("Received text: \(message)")
@@ -129,10 +130,12 @@ open class RTMPersistentConnection : NSObject, WebSocketDelegate {
         case .cancelled:
             isConnected = false
             isConnecting = false
+            botConnectStatus = false
             break
         case .error(let error):
             isConnected = false
             isConnecting = false
+            botConnectStatus = false
             connectionDelegate?.rtmConnectionDidFailWithError(error)
             break
         case .peerClosed:
@@ -143,12 +146,14 @@ open class RTMPersistentConnection : NSObject, WebSocketDelegate {
             if self?.receivedLastPong == false {
                 // we did not receive the last pong
                 // abort the socket so that we can spin up a new connection
-                // self.websocket.close()
-                // self.timerSource.suspend()
-                // self.connectionDelegate?.rtmConnectionDidFailWithError(NSError())
+                self?.websocket?.disconnect()
+                self?.timerSource.suspend()
+                self?.connectionDelegate?.rtmConnectionDidFailWithError(NSError())
+                botConnectStatus = false
             } else if self?.isConnected == false {
                 self?.websocket?.disconnect()
                 self?.timerSource.suspend()
+                botConnectStatus = false
             } else if self?.isConnected == true {
                 
                 // we got a pong recently
@@ -288,9 +293,9 @@ open class RTMPersistentConnection : NSObject, WebSocketDelegate {
             if self?.receivedLastPong == false {
                 // we did not receive the last pong
                 // abort the socket so that we can spin up a new connection
-                // self.websocket.close()
-                // self.timerSource.suspend()
-                // self.connectionDelegate?.rtmConnectionDidFailWithError(NSError())
+                self?.websocket?.disconnect()
+                self?.timerSource.suspend()
+                self?.connectionDelegate?.rtmConnectionDidFailWithError(NSError())
             } else if self?.isConnected == false {
                 self?.websocket?.disconnect()
                 self?.timerSource.suspend()
