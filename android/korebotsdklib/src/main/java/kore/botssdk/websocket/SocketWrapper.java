@@ -28,6 +28,7 @@ import kore.botssdk.io.crossbar.autobahn.websocket.interfaces.IWebSocket;
 import kore.botssdk.io.crossbar.autobahn.websocket.types.WebSocketOptions;
 import kore.botssdk.models.BotInfoModel;
 import kore.botssdk.models.BotSocketOptions;
+import kore.botssdk.models.CallBackEventModel;
 import kore.botssdk.net.BotRestBuilder;
 import kore.botssdk.net.RestResponse;
 import kore.botssdk.utils.Constants;
@@ -46,7 +47,7 @@ public final class SocketWrapper {
     public static SocketWrapper pKorePresenceInstance;
     SocketConnectionListener socketConnectionListener = null;
 
-    //    private final WebSocketConnection mConnection = new WebSocketConnection();
+    //    final WebSocketConnection mConnection = new WebSocketConnection();
     private final IWebSocket mConnection = new WebSocketConnection();
     static Timer timer = new Timer();
 
@@ -326,14 +327,13 @@ public final class SocketWrapper {
 
             @Override
             public void onError(Throwable throwable) {
-                LogUtils.d("HI", "on error");
                 mIsReconnectionAttemptNeeded = true;
                 reconnectAttempt();
             }
 
             @Override
             public void onComplete() {
-//                        Log.d("IKIDO","on complete called man");
+                KoreEventCenter.post(new CallBackEventModel("BotConnected", "Bot connected successfully"));
             }
         });
 
@@ -368,7 +368,6 @@ public final class SocketWrapper {
                             LogUtils.d("IKIDO", "Hey listener is null");
                         }
                         isConnecting = false;
-                        startSendingPong();
                         mReconnectionCount = 1;
                         mReconnectDelay = 1000;
                         KoreEventCenter.post(new RTMConnectionEvent(true));
@@ -386,18 +385,13 @@ public final class SocketWrapper {
                             timer.cancel();
                             timer = null;
                         }
-                        isConnecting = false;
 
-                        /*if (isConnected()) {
-                            stop();
-                        }*/
-//                        if(Utils.isNetworkAvailable(mContext))
+                        isConnecting = false;
                         reconnectAttempt();
                     }
 
                     @Override
                     public void onMessage(String payload) {
-//                        Log.d(LOG_TAG, "onTextMessage payload :" + payload);
                         if (socketConnectionListener != null) {
                             socketConnectionListener.onTextMessage(payload);
                         } else {
@@ -411,34 +405,11 @@ public final class SocketWrapper {
                     if (socketConnectionListener != null) {
                         socketConnectionListener.onOpen(isReconnectionAttaempt);
                     }
-                    startSendingPong();
                     mReconnectionCount = 1;
                     mReconnectDelay = 1000;
                 }
                 e.printStackTrace();
             }
-        }
-    }
-
-    void startSendingPong() {
-        TimerTask tTask = new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    if (mConnection.isConnected()) {
-                        mConnection.sendPing("pong from the client".getBytes());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        try {
-            if (timer == null) timer = new Timer();
-            timer.scheduleAtFixedRate(tTask, 1000L, 30000L);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -618,7 +589,6 @@ public final class SocketWrapper {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
-
                         LogUtils.d(LOG_TAG, "Entered into reconnection post delayed " + mReconnectDelay);
                         if (mIsReconnectionAttemptNeeded && !isConnected()) {
                             reconnect();
@@ -684,7 +654,7 @@ public final class SocketWrapper {
         }*/
     }
 
-    /**
+    /*
      * Determine the TLS enability of the url.
      * @param url url to connect to (is generally either ws:// or wss://)
      */
@@ -692,13 +662,13 @@ public final class SocketWrapper {
         mTLSEnabled = url.startsWith(Constants.SECURE_WEBSOCKET_PREFIX);
     }*/
 
-    /**
+    /*
      * To determine wither socket is connected or not
      *
      * @return boolean indicating the connection presence.
      */
     public boolean isConnected() {
-        return mConnection != null && mConnection.isConnected();
+        return mConnection.isConnected();
     }
 
     public String getBotUserId() {

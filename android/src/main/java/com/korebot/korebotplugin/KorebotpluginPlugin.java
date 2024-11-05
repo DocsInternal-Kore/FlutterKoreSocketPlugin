@@ -91,12 +91,19 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                 botClient.connectAsAnonymousUser(sharedPreferences.getString(JWT_TOKEN, ""), SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
                 break;
             case "sendMessage":
-                HashMap<String, Object> msg_data = call.argument("msg_data");
-                if (msg_data != null) {
-                    RestResponse.BotCustomData customData = new RestResponse.BotCustomData();
-                    customData.putAll(msg_data);
-                    botClient.sendMessage(call.argument("message"), customData);
-                } else botClient.sendMessage(call.argument("message"));
+                if (SocketWrapper.getInstance(context).isConnected()) {
+                    HashMap<String, Object> msg_data = call.argument("msg_data");
+                    if (msg_data != null) {
+                        RestResponse.BotCustomData customData = new RestResponse.BotCustomData();
+                        customData.putAll(msg_data);
+                        botClient.sendMessage(call.argument("message"), customData);
+                    } else botClient.sendMessage(call.argument("message"));
+                } else {
+                    channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("Send_Failed", "Socket disconnected, Trying to reconnect")));
+                    SDKConfiguration.Client.isReconnect = true;
+                    makeStsJwtCallWithConfig();
+                }
+
                 break;
             case "initialize":
                 SDKConfiguration.Client.bot_id = call.argument("botId");
@@ -120,19 +127,22 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
             case "closeBot":
                 if (botClient != null) botClient.disconnect();
                 break;
-
+            case "isSocketConnected":
+                if (botClient != null)
+                    channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("BotConnectStatus", String.valueOf(botClient.isConnected()))));
+                else channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("BotConnectStatus", String.valueOf(false))));
         }
     }
 
     SocketConnectionListener socketConnectionListener = new SocketConnectionListener() {
         @Override
         public void onOpen(boolean b) {
-            channel.invokeMethod("Callbacks", "Bot Connected Successfully");
+            channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("BotConnected", "Bot connected Successfully")));
         }
 
         @Override
         public void onClose(int i, String s) {
-            channel.invokeMethod("Callbacks", "Bot disconnected Successfully");
+            channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("BotClosed", "Bot disconnected Successfully")));
         }
 
         @Override
@@ -157,7 +167,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
         @Override
         public void onReconnectStopped(String reconnectionStopped) {
-            channel.invokeMethod("Callbacks", "Unable to connect to the bot. Please try again later");
+            channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("Error_Socket", "Max attempts reached, Reconnection Stopped")));
         }
     };
 
@@ -177,16 +187,16 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
                         //Initiating bot connection once connected callbacks will be fired on respective actions
                         botClient.connectAsAnonymousUser(jwt, SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
-                    } else channel.invokeMethod("Callbacks", "Unable to connect to the bot. Please try again later");
+                    } else channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("Error_STS", "STS call failed")));
                 } else {
-                    channel.invokeMethod("Callbacks", "Unable to connect to the bot. Please try again later");
+                    channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("Error_STS", "STS call failed")));
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<JWTTokenResponse> call, @NonNull Throwable t) {
                 LogUtils.e("token refresh", t.getMessage());
-                channel.invokeMethod("Callbacks", "Unable to connect to the bot. Please try again later");
+                channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("Error_STS", "STS call failed")));
             }
         });
     }

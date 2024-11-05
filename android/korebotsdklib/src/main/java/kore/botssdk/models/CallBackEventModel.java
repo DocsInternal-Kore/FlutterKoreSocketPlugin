@@ -4,10 +4,9 @@ public class CallBackEventModel {
     private String eventCode;
     private String eventMessage;
 
-    public CallBackEventModel(String eventCode, String eventName)
-    {
+    public CallBackEventModel(String eventCode, String eventMessage) {
         this.eventCode = eventCode;
-        this.eventMessage = eventName;
+        this.eventMessage = eventMessage;
     }
 
     public String getEventMessage() {
