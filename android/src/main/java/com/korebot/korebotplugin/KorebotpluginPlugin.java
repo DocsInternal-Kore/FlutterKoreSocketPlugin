@@ -50,6 +50,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
     String PREF_NAME = "Kore_Bot_Pref";
     String JWT_TOKEN = "JWT_TOKEN";
     String RETAIL_JWT_TOKEN = "RETAIL_JWT_TOKEN";
+    MethodCall missed_msg_call;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -99,6 +100,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                         botClient.sendMessage(call.argument("message"), customData);
                     } else botClient.sendMessage(call.argument("message"));
                 } else {
+                    missed_msg_call = call;
                     channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("Send_Failed", "Socket disconnected, Trying to reconnect")));
                     SDKConfiguration.Client.isReconnect = true;
                     makeStsJwtCallWithConfig();
@@ -138,6 +140,18 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
         @Override
         public void onOpen(boolean b) {
             channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("BotConnected", "Bot connected Successfully")));
+
+            if(missed_msg_call != null)
+            {
+                HashMap<String, Object> msg_data = missed_msg_call.argument("msg_data");
+                if (msg_data != null) {
+                    RestResponse.BotCustomData customData = new RestResponse.BotCustomData();
+                    customData.putAll(msg_data);
+                    botClient.sendMessage(missed_msg_call.argument("message"), customData);
+                } else botClient.sendMessage(missed_msg_call.argument("message"));
+
+                missed_msg_call = null;
+            }
         }
 
         @Override
