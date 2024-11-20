@@ -322,6 +322,10 @@ let searchConnect = SearchConnect()
                 self.searchConnect.closeBot()
                 
             case "isSocketConnected":
+                NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "CallbacksNotification"), object: nil)
+                
+                NotificationCenter.default.addObserver(self, selector: #selector(self.callbacksMethod), name: NSNotification.Name(rawValue: "CallbacksNotification"), object: nil)
+                
                 self.searchConnect.connectBotConnectStatus()
             default:
                 break
