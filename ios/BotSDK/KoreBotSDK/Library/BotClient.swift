@@ -62,11 +62,13 @@ open class BotClient: NSObject, RTMPersistentConnectionDelegate {
     open var connectionWillOpen: (() -> Void)?
     open var connectionDidOpen: (() -> Void)?
     open var connectionReady: (() -> Void)?
-   open var connectionDidClose: ((UInt16?, String?) -> Void)?
+    open var connectionDidClose: ((UInt16?, String?) -> Void)?
     open var connectionDidFailWithError: ((Error?) -> Void)?
     open var onMessage: (([String:Any]?) -> Void)?
     open var onMessageAck: ((Ack?) -> Void)?
     open var onUserMessageReceived:(([String:Any])-> Void)?
+    open var connectionRetry: (() -> Void)?
+    
     open var botsUrl: String {
         get {
             return Constants.KORE_BOT_SERVER
@@ -265,6 +267,12 @@ open class BotClient: NSObject, RTMPersistentConnectionDelegate {
             }
             dictionary?.forEach { (key, value) in parameters[key] = value }
             connection.sendMessage(message, parameters: parameters, options: options)
+        }else{
+            notDeliverdMsgsArray.append(message)
+            let dic = ["event_code": "Send_Failed", "event_message": "Socket disconnected, Trying to reconnect"]
+            let jsonString = Utilities.stringFromJSONObject(object: dic)
+            NotificationCenter.default.post(name: Notification.Name(tokenExipryNotification), object: jsonString)
+            connectionRetry?()
         }
     }
     

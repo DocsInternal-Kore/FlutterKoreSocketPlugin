@@ -110,7 +110,9 @@ open class KABotClient: NSObject {
                         if weakSelf.retryCount <= 4{
                             self?.tryConnect()
                         }else{
-                            NotificationCenter.default.post(name: Notification.Name(tokenExipryNotification), object: nil)
+                            let dic = ["event_code": "Error_Socket", "event_message": "Unable to connect. Please try again later"]
+                            let jsonString = Utilities.stringFromJSONObject(object: dic)
+                            NotificationCenter.default.post(name: Notification.Name(tokenExipryNotification), object: jsonString)
                         }
                     })
                 }
@@ -138,12 +140,30 @@ open class KABotClient: NSObject {
         botClient.connectionDidOpen = { [weak self] () in
             self?.isConnected = true
             self?.isConnecting = false
+            
+            DispatchQueue.main.async {
+                for _ in 0..<notDeliverdMsgsArray.count{
+                    self?.sendMessage(notDeliverdMsgsArray[0], options: nil)
+                    notDeliverdMsgsArray.remove(at: 0)
+                }
+            }
         }
         
         botClient.connectionReady = {
             
         }
         
+        botClient.connectionRetry = { [weak self] () in
+            self?.isConnected = false
+            self?.isConnecting = false
+            
+            if let weakSelf = self {
+                DispatchQueue.main.async {
+                    weakSelf.delegate?.botConnection(with: weakSelf.connectionState)
+                }
+            }
+            self?.tryConnect()
+        }
         botClient.connectionDidClose = { [weak self] (code, reason) in
             self?.isConnected = false
             self?.isConnecting = false
@@ -191,10 +211,16 @@ open class KABotClient: NSObject {
             }
         }
     }
-    
+    public func sendMessage(_ message: String, options: [String: Any]?) {
+        botClient.sendMessage(message, options: options)
+    }
     
     func deConfigureBotClient() {
         // events
+        let dic = ["event_code": "BotDisconnected", "event_message": "Bot disconnected"]
+        let jsonString = Utilities.stringFromJSONObject(object: dic)
+        NotificationCenter.default.post(name: Notification.Name(tokenExipryNotification), object: jsonString)
+        
         botClient.disconnect()
         botClient.connectionWillOpen = nil
         botClient.connectionDidOpen = nil

@@ -16,18 +16,8 @@ var callbacksNotification = "CallbacksNotification"
 
 var isTryConnect = true
 var isInternetAvailable = true
-var isBotConnectSucessFully = false
-
-//public var clientId = "cs-5e679d2f-bedf-5e06-89b9-cd1ebf522e63"
-//public var clientSecret = "Yrw7XUt2PdTBkFEmT9wthF2KrIgjSxKGwRNDkrWSoZw="
-//public var botId =  "st-6b76b530-3c87-5eed-86cc-3b3916dd6e4e"
-//public var chatBotName = "Agent Set up"
-//public var identityy = "abc@kore.com"
-//public var bot_Server_Url = ""
-//public var jwtServerUrl = ""
-
-//var isAnonymous = true
-
+var botConnectStatus = false
+var notDeliverdMsgsArray = [String]()
 
 open class Common : NSObject {
     public static func UIColorRGB(_ rgb: Int) -> UIColor {

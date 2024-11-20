@@ -320,6 +320,13 @@ let searchConnect = SearchConnect()
             case "closeBot":
                 // MARK: Close the bot
                 self.searchConnect.closeBot()
+                
+            case "isSocketConnected":
+                NotificationCenter.default.removeObserver(self, name: NSNotification.Name(rawValue: "CallbacksNotification"), object: nil)
+                
+                NotificationCenter.default.addObserver(self, selector: #selector(self.callbacksMethod), name: NSNotification.Name(rawValue: "CallbacksNotification"), object: nil)
+                
+                self.searchConnect.connectBotConnectStatus()
             default:
                 break
             }
@@ -342,8 +349,7 @@ let searchConnect = SearchConnect()
     }
     
     @objc func tokenExpiry(notification:Notification){
-        let dic = ["event_code": "SESSION_EXPIRED", "event_message": "Your session has been expired. Please re-login."]
-        let jsonString = Utilities.stringFromJSONObject(object: dic)
+        let jsonString: String = notification.object as! String
         NotificationCenter.default.post(name: Notification.Name("CallbacksNotification"), object: jsonString)
     }
 
@@ -379,5 +385,15 @@ let searchConnect = SearchConnect()
 6) When Socket disconnected by user or network disconnection
 ```
 { "eventCode" : "BotDisconnected", "eventMessage" : "Bot disconnected" }
+```
+
+7) When message send to bot and when socket is not connected sending this callback
+```
+{ "eventCode" : "Send_Failed", "eventMessage" : "Socket disconnected, Trying to reconnect" }
+```
+
+8) When isSocketConnected method called sending this callback
+```
+{ "eventCode" : "BotConnectStatus", "eventMessage" : "true/false" }
 ```
   
