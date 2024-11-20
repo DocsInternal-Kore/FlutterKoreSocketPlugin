@@ -277,7 +277,6 @@ public final class SocketWrapper {
 
             @Override
             public void onComplete() {
-                KoreEventCenter.post(new CallBackEventModel("BotConnected", "Bot connected successfully"));
             }
         });
     }

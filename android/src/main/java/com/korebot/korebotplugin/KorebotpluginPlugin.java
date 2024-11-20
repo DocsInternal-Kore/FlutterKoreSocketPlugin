@@ -19,6 +19,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import kore.botssdk.bot.BotClient;
 import kore.botssdk.event.KoreEventCenter;
+import kore.botssdk.models.BotResponse;
+import kore.botssdk.models.BotResponsePayLoadText;
 import kore.botssdk.models.CallBackEventModel;
 import kore.botssdk.models.JWTTokenResponse;
 import kore.botssdk.models.RetailTokenResponse;
@@ -75,11 +77,6 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                 SDKConfiguration.Server.KORE_BOT_SERVER_URL = call.argument("server_url");
                 SDKConfiguration.setJwtServerUrl(call.argument("jwt_server_url"));
 
-                if (StringUtils.isNotEmpty(call.argument("jwtToken"))) {
-                    SDKConfiguration.JWTServer.setJwt_token(call.argument("jwtToken"));
-                    sharedPreferences.edit().putString(JWT_TOKEN, call.argument("jwtToken")).apply();
-                } else makeStsJwtCallWithConfig();
-
                 HashMap<String, Object> data = call.argument("custom_data");
                 if (data != null) {
                     RestResponse.BotCustomData customData = new RestResponse.BotCustomData();
@@ -88,8 +85,14 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                     botClient = new BotClient(context, customData);
                 } else botClient = new BotClient(context);
 
-                //Initiating bot connection once connected callbacks will be fired on respective actions
-                botClient.connectAsAnonymousUser(sharedPreferences.getString(JWT_TOKEN, ""), SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
+                if (StringUtils.isNotEmpty(call.argument("jwtToken"))) {
+                    SDKConfiguration.JWTServer.setJwt_token(call.argument("jwtToken"));
+                    sharedPreferences.edit().putString(JWT_TOKEN, call.argument("jwtToken")).apply();
+
+                    //Initiating bot connection once connected callbacks will be fired on respective actions
+                    botClient.connectAsAnonymousUser(call.argument("jwtToken"), SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
+                } else makeStsJwtCallWithConfig();
+
                 break;
             case "sendMessage":
                 if (SocketWrapper.getInstance(context).isConnected()) {
@@ -141,8 +144,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
         public void onOpen(boolean b) {
             channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("BotConnected", "Bot connected Successfully")));
 
-            if(missed_msg_call != null)
-            {
+            if (missed_msg_call != null) {
                 HashMap<String, Object> msg_data = missed_msg_call.argument("msg_data");
                 if (msg_data != null) {
                     RestResponse.BotCustomData customData = new RestResponse.BotCustomData();
@@ -161,7 +163,27 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
 
         @Override
         public void onTextMessage(String payload) {
-            channel.invokeMethod("Callbacks", new Gson().toJson(payload));
+            try {
+                final BotResponse botResponse = gson.fromJson(payload, BotResponse.class);
+                if (botResponse == null || botResponse.getMessage() == null || botResponse.getMessage().isEmpty()) {
+                    return;
+                }
+
+                channel.invokeMethod("Callbacks", new Gson().toJson(payload));
+
+            } catch (Exception e) {
+                try {
+                    final BotResponsePayLoadText botResponse = gson.fromJson(payload, BotResponsePayLoadText.class);
+                    if (botResponse == null || botResponse.getMessage() == null || botResponse.getMessage().isEmpty()) {
+                        return;
+                    }
+
+                    channel.invokeMethod("Callbacks", new Gson().toJson(payload));
+
+                } catch (Exception e2) {
+                    e2.printStackTrace();
+                }
+            }
         }
 
         @Override
@@ -196,8 +218,6 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                     if (jwtTokenResponse != null) {
                         String jwt = jwtTokenResponse.getJwt();
                         sharedPreferences.edit().putString(JWT_TOKEN, jwt).apply();
-
-                        botClient = new BotClient(context);
 
                         //Initiating bot connection once connected callbacks will be fired on respective actions
                         botClient.connectAsAnonymousUser(jwt, SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, socketConnectionListener, SDKConfiguration.Client.isReconnect);
