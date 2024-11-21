@@ -91,6 +91,7 @@ open class KABotClient: NSObject {
     @objc func tryConnect() {
         let delayInMilliSeconds = 250
         //let delayInSeconds = 2
+        SDKConfiguration.botConfig.isReconnect = true
         botClientQueue.asyncAfter(deadline: .now() + .milliseconds(delayInMilliSeconds)) { [weak self] in
             if self?.isConnected == true {
                 self?.retryCount = 0
