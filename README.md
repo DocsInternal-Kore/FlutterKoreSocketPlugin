@@ -26,25 +26,25 @@ static const platform = MethodChannel('kore.botsdk/chatbot');
 2) Here is the sample varible format to pass bot configuration to the SDK's
 ```
 var botConfig = {
-    "clientId": "cs-47e5f4e6-0621-563d-a3fb-2d1f3ab94750",
-    "clientSecret": "TvctzsjB/iewjdddKi2Ber4PPrYr0LoTi1WUasiMceM=",
-    "botId": "st-953e931b-1fe5-5bcc-9bb7-1b9bd4226947",
+    "clientId": "PLEASE_ENTER_CLIENT_ID",
+    "clientSecret": "PLEASE_ENTER_CLIENT_SECRET",
+    "botId": "PLEASE_ENTER_BOT_ID",
     "chatBotName": "SDKBot",
-    "identity": "example@kore.com",
+    "identity": "example@example.com",
     "jwt_server_url":
-        "https://mk2r2rmj21.execute-api.us-east-1.amazonaws.com/dev/",
-    "server_url": "https://platform.kore.ai",
+        "PLEASE_ENTER_JWT_SERVER_URL",
+    "server_url": "PLEASE_ENTER_SERVER_URL",
     "isReconnect": false,
     "jwtToken": "",
     "custom_data": {"age": 34, "gender": "M"}
   };
 
 var searchConfig = {
-    "botId": "st-953e931b-1fe5-5bcc-9bb7-1b9bd4226947",
+    "botId": "PLEASE_ENTER_SEARCH_BOT_ID",
     "indexName": "tedbaker-test",
     "namespace": "tedbaker-gender-v1",
     "stage": "dev",
-    "retail_server_url": "https://retailassist-poc.kore.ai/"
+    "retail_server_url": "PLEASE_ENTER_RETAIL_SERVER_URL"
   };
 
 ```
@@ -118,10 +118,7 @@ Future<void> _callSendmethod(msg) async {
     });
 
     try {
-      final String result = await platform.invokeMethod('sendMessage', {
-        "message": msg,
-        "msg_data": {"size": 40, "gender": "M"}
-      });
+      final String result = await platform.invokeMethod('sendMessage', {"message": msg});
     } on PlatformException catch (e) {}
   }
 
@@ -207,7 +204,24 @@ Future<void> isSocketConnected() async {
 
 CallBack Event : {"eventCode":"BotConnectStatus","eventMessage":"true/false"}
 ```
+14) Below is the method can be used to update the custom data during the session.
+```
+Future<void> updateCustomData(customData) async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'Callbacks') {
+        // Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
 
+    try {
+      final String custom = await platform
+          .invokeMethod('updateCustomData', {"custom_data": customData});
+    } on PlatformException catch (e) {}
+  }
+
+CallBack Event : {"eventCode":"UpdateCustomData","eventMessage":"true/false"}
+```
 
 
 
@@ -395,5 +409,9 @@ let searchConnect = SearchConnect()
 8) When isSocketConnected method called sending this callback
 ```
 { "eventCode" : "BotConnectStatus", "eventMessage" : "true/false" }
+```
+9) When custom data method called and based on the update in the sdk sending this callback
+```
+{ "eventCode" : "UpdateCustomData", "eventMessage" : "true/false" }
 ```
   
