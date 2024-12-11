@@ -1,90 +1,123 @@
-# Flutter Plugin integration
+## 📝 Description
 
-Assuming flutter application is available
+A Flutter plugin for integrating Kore.ai's powerful chatbot SDK into your Flutter applications. This plugin provides seamless communication between your Flutter app and Kore.ai's bot platform, enabling rich conversational experiences.
 
-## Update pubspec file 
+## ✨ Features
 
-Add below snippet into flutter app pubspec.yaml “path” is where plugin is copied after that need to run “flutter pub get”
-```
+- 🤖 Real-time bot communication
+- 🔍 Advanced search capabilities
+- 📱 Native UI integration
+- 🔄 Automatic reconnection handling
+- 📊 Custom data management
+- 📜 Chat history retrieval
+- 🔐 Secure JWT authentication
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- iOS 11.0 or higher
+- Android API level 21 or higher
+- Kore.ai bot credentials
+
+### Installation
+
+1. Add the plugin to your `pubspec.yaml`:
+
+```yaml
 dependencies:
   flutter:
     sdk: flutter
-
-
   korebotplugin:
-     # the parent directory to use the current plugin's version.
-    path: ../ 
+    path: ../  # Use path for local development
+    # OR
+    # version: ^latest_version  # From pub.dev
 ```
 
-Steps for Integrating Flutter Socket Plugin into Flutter Application
-
-1) Create a “Method channel” with channel name as below
+2. Run flutter pub get:
+```bash
+flutter pub get
 ```
+## 💻 Implementation Guide
+
+### 1. Initialize Method Channel
+
+Create a method channel for communication:
+
+```dart
 static const platform = MethodChannel('kore.botsdk/chatbot');
 ```
 
-2) Here is the sample varible format to pass bot configuration to the SDK's
-```
+### 2. Configure Bot Settings
+
+Set up your bot configuration:
+
+```dart
 var botConfig = {
-    "clientId": "PLEASE_ENTER_CLIENT_ID",
-    "clientSecret": "PLEASE_ENTER_CLIENT_SECRET",
-    "botId": "PLEASE_ENTER_BOT_ID",
-    "chatBotName": "SDKBot",
-    "identity": "example@example.com",
-    "jwt_server_url":
-        "PLEASE_ENTER_JWT_SERVER_URL",
-    "server_url": "PLEASE_ENTER_SERVER_URL",
+    "clientId": "YOUR_CLIENT_ID",
+    "clientSecret": "YOUR_CLIENT_SECRET",
+    "botId": "YOUR_BOT_ID",
+    "chatBotName": "YOUR_BOT_NAME",
+    "identity": "user@example.com",
+    "jwt_server_url": "YOUR_JWT_SERVER_URL",
+    "server_url": "YOUR_SERVER_URL",
     "isReconnect": false,
     "jwtToken": "",
-    "custom_data": {"age": 34, "gender": "M"}
-  };
+    "custom_data": {
+        "age": 34,
+        "gender": "M"
+    }
+};
 
 var searchConfig = {
-    "botId": "PLEASE_ENTER_SEARCH_BOT_ID",
-    "indexName": "tedbaker-test",
-    "namespace": "tedbaker-gender-v1",
+    "botId": "YOUR_SEARCH_BOT_ID",
+    "indexName": "YOUR_INDEX",
+    "namespace": "YOUR_NAMESPACE",
     "stage": "dev",
-    "retail_server_url": "PLEASE_ENTER_RETAIL_SERVER_URL"
-  };
-
+    "retail_server_url": "YOUR_RETAIL_SERVER_URL"
+};
 ```
 
-3) Below is the method to be called from the parent application before connecting to the bot. Which intializes the SDK
-```
+### 3. Initialize the Bot
+
+```dart
 Future<void> botInitialize() async {
     platform.setMethodCallHandler((handler) async {
-      if (handler.method == 'Callbacks') {
-        // Do your logic here.
-        debugPrint("Event from native ${handler.arguments}");
-      }
+        if (handler.method == 'Callbacks') {
+            // Handle callbacks here
+            debugPrint("Event from native ${handler.arguments}");
+        }
     });
 
     try {
-      final String config =
-          await platform.invokeMethod('initialize', searchConfig);
-    } on PlatformException catch (e) {}
-  }
+        await platform.invokeMethod('initialize', searchConfig);
+    } on PlatformException catch (e) {
+        // Handle initialization errors
+    }
+}
 ```
-4) Below is the method to be called to establish the bot connection
-```
-“connectToBot” can be changed as per requirement.
+
+### 4. Connect to Bot
+
+```dart
 Future<void> connectToBot() async {
     platform.setMethodCallHandler((handler) async {
-      if (handler.method == 'Callbacks') {
-        // Do your logic here.
-        debugPrint("Event from native ${handler.arguments}");
-      }
+        if (handler.method == 'Callbacks') {
+            // Handle connection callbacks
+            debugPrint("Event from native ${handler.arguments}");
+        }
     });
 
     try {
-      final String result =
-          await platform.invokeMethod('getChatWindow', botConfig);
-    } on PlatformException catch (e) {}
-  }
+        await platform.invokeMethod('getChatWindow', botConfig);
+    } on PlatformException catch (e) {
+        // Handle connection errors
+    }
+}
+```
 
-```
-5) On button press the above mentioned method can be called to initiate the chat socket as below
-```
+### 5) On button press the above mentioned method can be called to initiate the chat socket as below
+```dart
  children: [
           ElevatedButton(
             onPressed: connectToBot,
@@ -93,8 +126,8 @@ Future<void> connectToBot() async {
         ],
 ```
 
-6) All the callbacks from native to the flutter application happens in the below snippet. Users can implement their own logics as per requirement.
-```
+### 6) All the callbacks from native to the flutter application happens in the below snippet. Users can implement their own logics as per requirement.
+```dart
 platform.setMethodCallHandler((handler) async {
     if (handler.method == 'Callbacks') {
       // Do your logic here.
@@ -104,10 +137,10 @@ platform.setMethodCallHandler((handler) async {
 
 ```
 
-7) When user wants to send any message to bot below method can be used. We can add context data as well in this method as key, value pair.
+### 7) Send message to Bot.
    This method verifies the bot connection is active or not, If active sends the message if not sends a call back to prarent app and tries to reconnect the bot connection
    and sends the message to bot.
-```
+```dart
 “_callSendmethod” can be changed as per requirement.
 Future<void> _callSendmethod(msg) async {
     platform.setMethodCallHandler((handler) async {
@@ -123,16 +156,16 @@ Future<void> _callSendmethod(msg) async {
   }
 
 ```
-8) When message sent to bot, bot_reponse can be received through callback in the same method
-```
+### 8) When message sent to bot, bot_reponse can be received through callback in the same method
+```dart
 if (handler.method == 'Callbacks') {
         // Do your logic here.
         debugPrint("Bot response from native ${handler.arguments}");
       }
 ```
 
-10) Below method can be used for getting search results with context data(Optional)
-```
+### 9) Search results with context data(Optional)
+```dart
 Future<void> getSearchResults(searchQuery) async {
     platform.setMethodCallHandler((handler) async {
       if (handler.method == 'Callbacks') {
@@ -151,10 +184,10 @@ Future<void> getSearchResults(searchQuery) async {
 
 ```
 
-By using the above method search results can be received in the "Callbacks" so that developer can implement their own logic
+By using the above method search results can be received in the "Callbacks" so that developer can implement your own logic
 
-11) Below method can be used to get the history of the user chat by providing "offset"(Number of conversations currently in the chat window) and "limit" (Limit of history messages to be received)
-```
+### 10) Below method can be used to get the history of the user chat by providing "offset"(Number of conversations currently in the chat window) and "limit" (Limit of history messages to be received)
+```dart
 Future<void> getHistoryResults(offset, limit) async {
     platform.setMethodCallHandler((handler) async {
       if (handler.method == 'Callbacks') {
@@ -170,8 +203,8 @@ Future<void> getHistoryResults(offset, limit) async {
   }
 ```
 
-12) Below is the method can be used to close the bot.
-```
+### 11) Below is the method can be used to close the bot.
+```dart
 Future<void> closeBot() async {
     platform.setMethodCallHandler((handler) async {
       if (handler.method == 'CloseBot') {
@@ -186,8 +219,8 @@ Future<void> closeBot() async {
   }
 ```
 
-13) Below is the method can be used to verify the bot connection active or inactive.
-```
+### 12) Below is the method can be used to verify the bot connection active or inactive.
+```dart
 Future<void> isSocketConnected() async {
     platform.setMethodCallHandler((handler) async {
       if (handler.method == 'Callbacks') {
@@ -204,8 +237,9 @@ Future<void> isSocketConnected() async {
 
 CallBack Event : {"eventCode":"BotConnectStatus","eventMessage":"true/false"}
 ```
-14) Below is the method can be used to update the custom data during the session.
-```
+
+### 13) Below is the method can be used to update the custom data during the session.
+```dart
 Future<void> updateCustomData(customData) async {
     platform.setMethodCallHandler((handler) async {
       if (handler.method == 'Callbacks') {
@@ -223,20 +257,17 @@ Future<void> updateCustomData(customData) async {
 CallBack Event : {"eventCode":"UpdateCustomData","eventMessage":"true/false"}
 ```
 
-
-
-
 # For iOS:
 
 
-1) Add below lines in AppDelegate.swift
-```
+### 1) Add below lines in AppDelegate.swift
+```dart
 import korebotplugin
 let searchConnect = SearchConnect()
 
 ```
-2) Add below lines in didFinishLaunchingWithOptions method in AppDelegate.swift
-```
+### 2) Add below lines in didFinishLaunchingWithOptions method in AppDelegate.swift
+```dart
         let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
         flutterMethodChannel = FlutterMethodChannel(name: "kore.botsdk/chatbot",
                                                     binaryMessenger: controller.binaryMessenger)
@@ -348,9 +379,8 @@ let searchConnect = SearchConnect()
 
 ```
 
-3) Add below methods in AppDelegate.swift
-
-```
+### 3) Add below methods in AppDelegate.swift
+```dart
     // MARK: Callbacks From Native to flutter
     @objc func callbacksMethod(notification:Notification) {
         let dataString: String = notification.object as! String
@@ -366,52 +396,52 @@ let searchConnect = SearchConnect()
         let jsonString: String = notification.object as! String
         NotificationCenter.default.post(name: Notification.Name("CallbacksNotification"), object: jsonString)
     }
-
 ```
 
-# Error CallBacks
+### Error CallBacks
 
 1) When fails in fetching jwt token
-```
+```dart
 { "eventCode" : "Error_STS", "eventMessage" : "STS call failed" }
 ```
 
 2) When fails in jwt grant call
-```
+```dart
 { "eventCode" : "Error_JwtGrant", "eventMessage" : "JwtGrant call failed" }
 ```
 
 3) When fails in RTM start call
-```
+```dart
 { "eventCode" : "Error_RTMStart", "eventMessage" : "RTM start call failed" }
 ```
 
 4) When Socket connection to Bot failed
-```
+```dart
 { "eventCode" : "Error_Socket", "eventMessage" : "Unable to connect. Please try again later" }
 ```
 
 5) When Socket connected successfully
-```
+```dart
 { "eventCode " : "BotConnected" , "eventMessage" : "Bot connected successfully" }
 ```
 
 6) When Socket disconnected by user or network disconnection
-```
+```dart
 { "eventCode" : "BotDisconnected", "eventMessage" : "Bot disconnected" }
 ```
 
 7) When message send to bot and when socket is not connected sending this callback
-```
+```dart
 { "eventCode" : "Send_Failed", "eventMessage" : "Socket disconnected, Trying to reconnect" }
 ```
 
 8) When isSocketConnected method called sending this callback
-```
+```dart
 { "eventCode" : "BotConnectStatus", "eventMessage" : "true/false" }
 ```
+
 9) When custom data method called and based on the update in the sdk sending this callback
-```
+```dart
 { "eventCode" : "UpdateCustomData", "eventMessage" : "true/false" }
 ```
   
