@@ -111,16 +111,10 @@ The example provides a complete UI implementation including:
 - History retrieval
 - Custom data management
 
-## Additional Resources
-
-- [Kore.ai Documentation](https://developer.kore.ai)
-- [Flutter Documentation](https://docs.flutter.dev/)
-- [Plugin API Reference](https://pub.dev/documentation/korebotplugin)
-
 ## Support
 
 For issues and feature requests, please file them on the [issue tracker](https://github.com/your-repo/issues).
 
 ## License
 
-This example is released under the MIT License. See the LICENSE file for details.
+License Copyright © Kore.ai, Inc. MIT License; see LICENSE for further details.
