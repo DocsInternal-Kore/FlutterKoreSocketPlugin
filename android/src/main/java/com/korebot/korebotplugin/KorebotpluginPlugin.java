@@ -96,12 +96,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
                 break;
             case "sendMessage":
                 if (SocketWrapper.getInstance(context).isConnected()) {
-                    HashMap<String, Object> msg_data = call.argument("msg_data");
-                    if (msg_data != null) {
-                        RestResponse.BotCustomData customData = new RestResponse.BotCustomData();
-                        customData.putAll(msg_data);
-                        botClient.sendMessage(call.argument("message"), customData);
-                    } else botClient.sendMessage(call.argument("message"));
+                    botClient.sendMessage(call.argument("message"));
                 } else {
                     missed_msg_call = call;
                     channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("Send_Failed", "Socket disconnected, Trying to reconnect")));
@@ -132,6 +127,14 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
             case "closeBot":
                 if (botClient != null) botClient.disconnect();
                 break;
+            case "updateCustomData":
+                    HashMap<String, Object> custom_data = call.argument("custom_data");
+                    if (custom_data != null && botClient != null) {
+                        botClient.getBotInfoModel().customData.putAll(custom_data);
+                        channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("UpdateCustomData", String.valueOf(true))));
+                    }
+                    else channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("UpdateCustomData", String.valueOf(false))));
+                break;
             case "isSocketConnected":
                 if (botClient != null)
                     channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("BotConnectStatus", String.valueOf(botClient.isConnected()))));
@@ -145,13 +148,7 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
             channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("BotConnected", "Bot connected Successfully")));
 
             if (missed_msg_call != null) {
-                HashMap<String, Object> msg_data = missed_msg_call.argument("msg_data");
-                if (msg_data != null) {
-                    RestResponse.BotCustomData customData = new RestResponse.BotCustomData();
-                    customData.putAll(msg_data);
-                    botClient.sendMessage(missed_msg_call.argument("message"), customData);
-                } else botClient.sendMessage(missed_msg_call.argument("message"));
-
+                botClient.sendMessage(missed_msg_call.argument("message"));
                 missed_msg_call = null;
             }
         }

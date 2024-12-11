@@ -52,9 +52,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   static const platform = MethodChannel('kore.botsdk/chatbot');
   var botConfig = {
-    "clientId": "cs-50f553c0-80f4-5b12-a1ce-5f457a52685e",
-    "clientSecret": "fBigZvvWpI6434Sj1sRhrm1+2n6E0js2AloEwH93YyQ=",
-    "botId": "st-3e7853fc-f2f5-5fe8-8c23-9a71b7240e3c",
+    "clientId": "cs-58a260f2-8a77-58e2-8996-ade60df3f9f2",
+    "clientSecret": "nRzHSD9YSpeo/GD13vHPLM5Qv4GGEb+JuKTwZw7ff7o=",
+    "botId": "st-e17a5093-277d-5cf2-ac99-be251e5605c1",
     "chatBotName": "SDKBot",
     "identity": "example@kore.com",
     "jwt_server_url":
@@ -62,7 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
     "server_url": "https://uae-bots.kore.ai",
     "isReconnect": false,
     "jwtToken": "",
-    "custom_data": {"age": 34, "gender": "M"}
+    "custom_data": {"age": 39, "gender": "M"}
   };
   var searchConfig = {
     "botId": "st-953e931b-1fe5-5bcc-9bb7-1b9bd4226947",
@@ -98,10 +98,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     try {
-      final String result = await platform.invokeMethod('sendMessage', {
-        "message": msg,
-        "msg_data": {"size": 40, "gender": "M"}
-      });
+      final String result =
+          await platform.invokeMethod('sendMessage', {"message": msg});
     } on PlatformException catch (e) {}
   }
 
@@ -176,6 +174,20 @@ class _MyHomePageState extends State<MyHomePage> {
     } on PlatformException catch (e) {}
   }
 
+  Future<void> updateCustomData(customData) async {
+    platform.setMethodCallHandler((handler) async {
+      if (handler.method == 'Callbacks') {
+        // Do your logic here.
+        debugPrint("Event from native ${handler.arguments}");
+      }
+    });
+
+    try {
+      final String custom = await platform
+          .invokeMethod('updateCustomData', {"custom_data": customData});
+    } on PlatformException catch (e) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     botInitialize();
@@ -213,6 +225,20 @@ class _MyHomePageState extends State<MyHomePage> {
               child: ElevatedButton(
                   onPressed: () => {_callSendmethod(myController.text)},
                   child: const Text('Send Message')),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              child: ElevatedButton(
+                  onPressed: () => {
+                        updateCustomData({
+                          "size": 40,
+                          "gender": "F",
+                          "color": "blue",
+                          "age": 38,
+                          "outfit": "T-shirt"
+                        })
+                      },
+                  child: const Text('Update Custom Data')),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
