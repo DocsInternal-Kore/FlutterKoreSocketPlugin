@@ -221,7 +221,7 @@ open class KABotClient: NSObject {
         let dic = ["event_code": "BotDisconnected", "event_message": "Bot disconnected"]
         let jsonString = Utilities.stringFromJSONObject(object: dic)
         NotificationCenter.default.post(name: Notification.Name(tokenExipryNotification), object: jsonString)
-        
+        botConnectStatus = false
         botClient.disconnect()
         botClient.connectionWillOpen = nil
         botClient.connectionDidOpen = nil
@@ -252,9 +252,22 @@ open class KABotClient: NSObject {
         //let botInfo: [String: Any] = ["chatBot": chatBotName, "taskBotId": botId]
         var botInfo: [String: Any] = [:]
         if SDKConfiguration.botConfig.customData.isEmpty{
-            botInfo = ["chatBot": chatBotName, "taskBotId": botId]
+            if  !updatedCustomData.isEmpty{
+                var customData: [String: Any] = [:]
+                for (key, value) in updatedCustomData{
+                    customData[key] = value
+                }
+                botInfo = ["chatBot": chatBotName, "taskBotId": botId,"customData": customData]
+            }else{
+                botInfo = ["chatBot": chatBotName, "taskBotId": botId]
+            }
         }else{
-            let customData: [String: Any] = SDKConfiguration.botConfig.customData
+            var customData: [String: Any] = SDKConfiguration.botConfig.customData
+            if  !updatedCustomData.isEmpty{
+                    for (key, value) in updatedCustomData{
+                        customData[key] = value
+                    }
+                }
             botInfo = ["chatBot": chatBotName, "taskBotId": botId,"customData": customData]
         }
         if SDKConfiguration.botConfig.customJWToken != ""{

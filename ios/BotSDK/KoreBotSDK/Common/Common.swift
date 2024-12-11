@@ -18,6 +18,7 @@ var isTryConnect = true
 var isInternetAvailable = true
 var botConnectStatus = false
 var notDeliverdMsgsArray = [String]()
+var updatedCustomData: [String: Any] = [:]
 
 open class Common : NSObject {
     public static func UIColorRGB(_ rgb: Int) -> UIColor {

@@ -325,6 +325,14 @@ open class RTMPersistentConnection : NSObject, WebSocketDelegate {
             dictionary.setObject(messageObject, forKey: "message" as NSCopying)
             dictionary.setObject("/bot.message", forKey: "resourceid" as NSCopying)
             if (self.botInfoParameters != nil) {
+                if  !updatedCustomData.isEmpty{
+                    if var botInfoCustomData = self.botInfoParameters?["customData"] as? [String: Any]{
+                        for (key, value) in updatedCustomData{
+                            botInfoCustomData[key] = value
+                        }
+                        self.botInfoParameters?["customData"] = botInfoCustomData
+                    }
+                }
                 dictionary.setObject(self.botInfoParameters as Any, forKey: "botInfo" as NSCopying)
             }
             let uuid: String = Constants.getUUID()

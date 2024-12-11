@@ -219,6 +219,20 @@ public class SearchConnect: NSObject {
         let jsonString = Utilities.stringFromJSONObject(object: dic)
         NotificationCenter.default.post(name: Notification.Name(callbacksNotification), object: jsonString)
     }
+    
+    public func updateCustomData(customData:[String: Any]){
+        updatedCustomData = customData
+        if !updatedCustomData.isEmpty{
+            let dic = ["event_code": "UpdateCustomData", "event_message": true] as [String : Any]
+            let jsonString = Utilities.stringFromJSONObject(object: dic)
+            NotificationCenter.default.post(name: Notification.Name(callbacksNotification), object: jsonString)
+        }else{
+            let dic = ["event_code": "UpdateCustomData", "event_message": false] as [String : Any]
+            let jsonString = Utilities.stringFromJSONObject(object: dic)
+            NotificationCenter.default.post(name: Notification.Name(callbacksNotification), object: jsonString)
+        }
+        
+    }
 
 }
 

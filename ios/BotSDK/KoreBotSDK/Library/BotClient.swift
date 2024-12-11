@@ -260,9 +260,9 @@ open class BotClient: NSObject, RTMPersistentConnectionDelegate {
         if isConnected {
             var parameters = customData ?? [:]
             if let botToken = authInfoModel?.accessToken {
-                if let message_data = messageData, !message_data.isEmpty{
-                    parameters = messageData ?? [:]
-                }
+//                if let message_data = messageData, !message_data.isEmpty{
+//                    parameters = messageData ?? [:]
+//                }
                 parameters["botToken"] = botToken
             }
             dictionary?.forEach { (key, value) in parameters[key] = value }

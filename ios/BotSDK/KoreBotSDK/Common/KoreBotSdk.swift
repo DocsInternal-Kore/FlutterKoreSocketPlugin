@@ -90,6 +90,12 @@ public class KoreBotSdk: NSObject {
             let dic = ["event_code": "BotConnectStatus", "event_message": botConnectStatus] as [String : Any]
             let jsonString = Utilities.stringFromJSONObject(object: dic)
             NotificationCenter.default.post(name: Notification.Name(callbacksNotification), object: jsonString)
+        case "updateCustomData":
+            let myresult = callArguments as? [String: Any]
+            // MARK: Update CustomData
+            if let custom_data = myresult?["custom_data"] as? [String:Any]{
+                self.searchConnect.updateCustomData(customData: custom_data)
+            }
         default:
             break
         }

@@ -115,6 +115,16 @@ import korebotplugin
                 
                 NotificationCenter.default.addObserver(self, selector: #selector(self.callbacksMethod), name: NSNotification.Name(rawValue: "CallbacksNotification"), object: nil)
                 self.searchConnect.connectBotConnectStatus()
+                
+            case "updateCustomData":
+                guard let result = call.arguments else {
+                    return
+                }
+                let myresult = result as? [String: Any]
+                // MARK: Update CustomData
+                if let custom_data = myresult?["custom_data"] as? [String:Any]{
+                    self.searchConnect.updateCustomData(customData: custom_data)
+                }
             default:
                 break
             }
