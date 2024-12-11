@@ -19,6 +19,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import kore.botssdk.bot.BotClient;
 import kore.botssdk.event.KoreEventCenter;
+import kore.botssdk.models.BotInfoModel;
 import kore.botssdk.models.BotResponse;
 import kore.botssdk.models.BotResponsePayLoadText;
 import kore.botssdk.models.CallBackEventModel;
@@ -130,7 +131,13 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
             case "updateCustomData":
                     HashMap<String, Object> custom_data = call.argument("custom_data");
                     if (custom_data != null && botClient != null) {
-                        botClient.getBotInfoModel().customData.putAll(custom_data);
+                        if(botClient.getBotInfoModel() != null)
+                            botClient.getBotInfoModel().customData.putAll(custom_data);
+                        else
+                        {
+                            botClient.setBotInfoModel(new BotInfoModel(SDKConfiguration.Client.bot_name, SDKConfiguration.Client.bot_id, custom_data));
+                        }
+
                         channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("UpdateCustomData", String.valueOf(true))));
                     }
                     else channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("UpdateCustomData", String.valueOf(false))));

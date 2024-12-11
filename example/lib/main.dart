@@ -262,6 +262,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: () => {getHistoryResults(0, 10)},
                   child: const Text('Get History')),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              child: ElevatedButton(
+                  onPressed: closeBot, child: const Text('Close Bot')),
+            ),
           ],
         ),
       ),
