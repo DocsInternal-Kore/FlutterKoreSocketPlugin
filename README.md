@@ -454,4 +454,9 @@ let searchConnect = SearchConnect()
 ```dart
 { "eventCode" : "UpdateCustomData", "eventMessage" : "true/false" }
 ```
+
+10) When there is no connectivity to the internet and user tries to send message to the Kore.ai Bot sending this callback
+```dart
+{ "eventCode" : "NoInternet", "eventMessage" : "No internet connection, Please try again later." }
+```
   

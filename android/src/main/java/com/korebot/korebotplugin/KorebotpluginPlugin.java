@@ -2,6 +2,8 @@ package com.korebot.korebotplugin;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import androidx.annotation.NonNull;
 
@@ -98,11 +100,14 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
             case "sendMessage":
                 if (SocketWrapper.getInstance(context).isConnected()) {
                     botClient.sendMessage(call.argument("message"));
-                } else {
+                } else if(isOnline()){
                     missed_msg_call = call;
                     channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("Send_Failed", "Socket disconnected, Trying to reconnect")));
                     SDKConfiguration.Client.isReconnect = true;
                     makeStsJwtCallWithConfig();
+                }
+                else {
+                    channel.invokeMethod("Callbacks", gson.toJson(new CallBackEventModel("NoInternet", "No internet connection, Please try again later.")));
                 }
 
                 break;
@@ -401,5 +406,11 @@ public class KorebotpluginPlugin implements FlutterPlugin, MethodCallHandler {
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         channel.setMethodCallHandler(null);
         KoreEventCenter.unregister(this);
+    }
+
+    private boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }
