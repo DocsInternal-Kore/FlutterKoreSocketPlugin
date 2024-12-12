@@ -8,6 +8,7 @@
 
 import UIKit
 import Alamofire
+import Network
 
 public enum BotClientConnectionState : Int {
     case NONE
@@ -255,24 +256,35 @@ open class BotClient: NSObject, RTMPersistentConnectionDelegate {
             NSLog("WebSocket connection not availableError?")
            return
         }
-        
-        let isConnected = connection.isConnected
-        if isConnected {
-            var parameters = customData ?? [:]
-            if let botToken = authInfoModel?.accessToken {
-//                if let message_data = messageData, !message_data.isEmpty{
-//                    parameters = messageData ?? [:]
-//                }
-                parameters["botToken"] = botToken
+        let isInternetAvailable = NetworkMonitor.shared.isConnected
+        if isInternetAvailable {
+            //print("Internet is available")
+            let isConnected = connection.isConnected
+            if isConnected {
+                var parameters = customData ?? [:]
+                if let botToken = authInfoModel?.accessToken {
+    //                if let message_data = messageData, !message_data.isEmpty{
+    //                    parameters = messageData ?? [:]
+    //                }
+                    parameters["botToken"] = botToken
+                }
+                dictionary?.forEach { (key, value) in parameters[key] = value }
+                connection.sendMessage(message, parameters: parameters, options: options)
+            }else{
+                notDeliverdMsgsArray.append(message)
+//                let dic = ["event_code": "Send_Failed", "event_message": "Socket disconnected, Trying to reconnect"]
+//                let jsonString = Utilities.stringFromJSONObject(object: dic)
+//                NotificationCenter.default.post(name: Notification.Name(tokenExipryNotification), object: jsonString)
+                connectionRetry?()
             }
-            dictionary?.forEach { (key, value) in parameters[key] = value }
-            connection.sendMessage(message, parameters: parameters, options: options)
-        }else{
+        } else {
+            botConnectStatus = false
+            //print("No internet connection")
             notDeliverdMsgsArray.append(message)
-            let dic = ["event_code": "Send_Failed", "event_message": "Socket disconnected, Trying to reconnect"]
+            let dic = ["event_code": "NoInternet", "event_message": "No internet connection, Please try again later."]
             let jsonString = Utilities.stringFromJSONObject(object: dic)
             NotificationCenter.default.post(name: Notification.Name(tokenExipryNotification), object: jsonString)
-            connectionRetry?()
+           // connectionRetry?()
         }
     }
     
@@ -308,5 +320,24 @@ open class BotClient: NSObject, RTMPersistentConnectionDelegate {
     // MARK: - deinit
     deinit {
         print("BotClient dealloc")
+    }
+}
+
+class NetworkMonitor {
+    static let shared = NetworkMonitor()
+    private let monitor = NWPathMonitor()
+    private let queue = DispatchQueue.global(qos: .background)
+    var isConnected: Bool = true
+    
+    private init() {
+        monitor.pathUpdateHandler = { path in
+            self.isConnected = path.status == .satisfied
+            if path.status == .satisfied {
+                print("Connected to the internet..")
+            } else {
+                print("No internet connection..")
+            }
+        }
+        monitor.start(queue: queue)
     }
 }
