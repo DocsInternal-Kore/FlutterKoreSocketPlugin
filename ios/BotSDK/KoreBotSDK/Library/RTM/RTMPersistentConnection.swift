@@ -75,6 +75,11 @@ open class RTMTimer: NSObject {
 }
 
 open class RTMPersistentConnection : NSObject, WebSocketDelegate {
+    func sendEventFultterApp(){
+        let dic = ["event_code": "BotConnected", "event_message": "Bot connected successfully"]
+        let jsonString = Utilities.stringFromJSONObject(object: dic)
+        NotificationCenter.default.post(name: Notification.Name(callbacksNotification), object: jsonString)
+    }
     public func didReceive(event: Starscream.WebSocketEvent, client: Starscream.WebSocketClient) {
         switch event {
         case .connected(let headers):
@@ -83,6 +88,7 @@ open class RTMPersistentConnection : NSObject, WebSocketDelegate {
             isConnecting = false
             botConnectStatus = true
             print("websocket is connected: \(headers)")
+            sendEventFultterApp()
         case .disconnected(let reason, let code):
             connectionDelegate?.rtmConnectionDidClose(code, reason: reason)
             isConnected = false

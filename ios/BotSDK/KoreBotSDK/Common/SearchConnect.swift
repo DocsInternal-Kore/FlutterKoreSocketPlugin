@@ -76,10 +76,10 @@ public class SearchConnect: NSObject {
         
         kaBotClient.connect(block: { [weak self] (client) in
             print("Sucess")
-            botConnectStatus = true
-            let dic = ["event_code": "BotConnected", "event_message": "Bot connected successfully"]
-            let jsonString = Utilities.stringFromJSONObject(object: dic)
-            NotificationCenter.default.post(name: Notification.Name(callbacksNotification), object: jsonString)
+//            botConnectStatus = true
+//            let dic = ["event_code": "BotConnected", "event_message": "Bot connected successfully"]
+//            let jsonString = Utilities.stringFromJSONObject(object: dic)
+//            NotificationCenter.default.post(name: Notification.Name(callbacksNotification), object: jsonString)
         }) { (error) in
             print(error.localizedDescription)
             botConnectStatus = false

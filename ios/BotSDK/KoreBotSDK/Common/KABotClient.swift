@@ -105,10 +105,10 @@ open class KABotClient: NSObject {
                     }
                     weakSelf.retryCount += 1
                     weakSelf.connect(block: {(client) in
-                        botConnectStatus = true
-                        let dic = ["event_code": "BotConnected", "event_message": "Bot connected successfully"]
-                        let jsonString = Utilities.stringFromJSONObject(object: dic)
-                        NotificationCenter.default.post(name: Notification.Name(tokenExipryNotification), object: jsonString)
+//                        botConnectStatus = true
+//                        let dic = ["event_code": "BotConnected", "event_message": "Bot connected successfully"]
+//                        let jsonString = Utilities.stringFromJSONObject(object: dic)
+//                        NotificationCenter.default.post(name: Notification.Name(tokenExipryNotification), object: jsonString)
                     }, failure:{(error) in
                         self?.isConnecting = false
                         self?.isConnected = false
@@ -230,15 +230,15 @@ open class KABotClient: NSObject {
         // events
         botConnectStatus = false
         botClient.disconnect()
-        botClient.connectionWillOpen = nil
-        botClient.connectionDidOpen = nil
-        botClient.connectionReady = nil
-        botClient.connectionDidClose = nil
-        botClient.connectionDidFailWithError = nil
-        botClient.onMessage = nil
-        botClient.onMessageAck = nil
-        botClient.onUserMessageReceived = nil
-        botClient.connectionRetry = nil
+//        botClient.connectionWillOpen = nil
+//        botClient.connectionDidOpen = nil
+//        botClient.connectionReady = nil
+//        botClient.connectionDidClose = nil
+//        botClient.connectionDidFailWithError = nil
+//        botClient.onMessage = nil
+//        botClient.onMessageAck = nil
+//        botClient.onUserMessageReceived = nil
+//        botClient.connectionRetry = nil
         
         let dic = ["event_code": "BotDisconnected", "event_message": "Bot disconnected"]
         let jsonString = Utilities.stringFromJSONObject(object: dic)

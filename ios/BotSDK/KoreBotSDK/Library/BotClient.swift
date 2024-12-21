@@ -179,14 +179,13 @@ open class BotClient: NSObject, RTMPersistentConnectionDelegate {
     @objc public func connect(isReconnect: Bool) {
         reconnects = isReconnect
         if authInfoModel == nil {
-            //            self.connectWithJwToken(jwToken, intermediary: { [weak self] (client) in
-            //                self?.intermediaryClosure?(client)
-            //            }, success: { (client) in
-            //                self.successClosure?(client)
-            //            }, failure: { (error) in
-            //                self.failureClosure?(NSError(domain: "RTM", code: 0, userInfo: error?._userInfo as? [String : Any]))
-            //            })
-                        failureClosure?(NSError(domain: "RTM", code: 0, userInfo: nil))
+            self.connectWithJwToken(jwToken, intermediary: { [weak self] (client) in
+                self?.intermediaryClosure?(client)
+            }, success: { (client) in
+                self.successClosure?(client)
+            }, failure: { (error) in
+                self.failureClosure?(NSError(domain: "RTM", code: 0, userInfo: error?._userInfo as? [String : Any]))
+            })
         } else if let authInfoModel = authInfoModel, let botInfoParameters = botInfoParameters {
             let requestManager: HTTPRequestManager = HTTPRequestManager.sharedManager
             requestManager.getRtmUrlWithAuthInfoModel(authInfoModel, botInfo: botInfoParameters, success: { [weak self] (botInfo) in
