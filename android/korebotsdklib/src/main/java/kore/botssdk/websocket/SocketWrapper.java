@@ -2,9 +2,9 @@ package kore.botssdk.websocket;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.os.Handler;
-import android.util.Log;
 
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -514,12 +514,12 @@ public final class SocketWrapper {
     /*
      * Method to Reconnection attempt based on incremental delay
      *
-     * @reurn
+     * @return
      */
     /*
      * Method to Reconnection attempt based on incremental delay
      *
-     * @reurn
+     * @return
      */
     void reconnectAttempt() {
         if (mReconnectionCount < 5) {
@@ -551,18 +551,10 @@ public final class SocketWrapper {
      * @return
      */
     int getReconnectDelay() {
-//        if (isOnline()) {
         mReconnectionCount++;
         LogUtils.d(LOG_TAG, "Reconnection count " + mReconnectionCount);
-//        }
 
         return 5 * 1000;
-    }
-
-    private boolean isOnline() {
-        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     /**
